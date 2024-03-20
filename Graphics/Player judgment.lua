@@ -75,7 +75,7 @@ if file_to_load == "None" then
 					end
 				end
 			end
-	  end,
+	    end,
 		EarlyHitMessageCommand=function(self, param)
 			if param.Player ~= player then return end
 	
