@@ -18,6 +18,9 @@ for i = 1, NumJudgmentsAvailable() do
     end
 end
 
+local W2 = SL.Preferences.ITG.TimingWindowSecondsW1 + SL.Preferences.ITG.TimingWindowAdd
+local W1 = SL.Preferences["FA+"].TimingWindowSecondsW1 + SL.Preferences.ITG.TimingWindowAdd
+
 local function DisplayText(self, params)
     local score = ToEnumShortString(params.TapNoteScore)
     if score == "W1" or score == "W2" or score == "W3" or score == "W4" or score == "W5" then
