@@ -10,7 +10,7 @@ local threshold = nil
 for i = 1, NumJudgmentsAvailable() do
     if mods.TimingWindows[i] then
         if i == 1 and mods.ShowFaPlusWindow then
-            threshold = GetTimingWindow(1, "FA+")
+            threshold = GetTimingWindow(1, "FA+", mods.SmallerWhite)
         else
             threshold = GetTimingWindow(i)
         end
@@ -24,10 +24,22 @@ local function DisplayText(self, params)
         if math.abs(params.TapNoteOffset) > threshold then
             self:finishtweening()
 
-            self:diffusealpha(1)
+			-- Scale size of early/late text depending on offset (worse errors -> bigger text)
+			local noteOffset = math.abs(params.TapNoteOffset)
+			local scale1 = 1
+			local scale2 = 1
+			
+			if 0.010 < noteOffset and noteOffset <= W1 and mods.SmallerWhite then
+				scale1 = (noteOffset - 0.010)/(W1 - 0.010)
+			elseif W1 < noteOffset and noteOffset <= W2 then
+				scale2 = (noteOffset - W1)/(W2 - W1)
+			end
+			
+			self:diffusealpha(1)
+				:x((params.Early and -1 or 1) * 60)
+				:zoom(0.15 + (scale1*0.2) + (scale2*0.1))
                 :settext(params.Early and "EARLY" or "LATE")
-                :diffuse(params.Early and color("#066af4") or color("#ff5a4e"))
-                :x((params.Early and -1 or 1) * 40)
+                :diffuse(params.Early and color("#0051db") or color("#ff1605"))
                 :sleep(0.5)
                 :diffusealpha(0)
         else
@@ -39,7 +51,7 @@ end
 
 local af = Def.ActorFrame{
     OnCommand = function(self)
-        self:xy(GetNotefieldX(player), layout.y)
+        self:xy(GetNotefieldX(player), layout.y-10)
     end,
 
     LoadFont("Wendy/_wendy small")..{
