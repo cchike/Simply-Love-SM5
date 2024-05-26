@@ -133,10 +133,10 @@ for t in ivalues(sequential_offsets) do
 			table.insert( verts, {{x+1.5,y+1.5,0}, {r,g,b,0.333}} )
 			table.insert( verts, {{x,y+1.5,0}, {r,g,b,0.333}} )
 		else
-			table.insert( verts, {{x,y,0}, {r,g,b,0.666}} )
-			table.insert( verts, {{x+1.5,y,0}, {r,g,b,0.666}} )
-			table.insert( verts, {{x+1.5,y+1.5,0}, {r,g,b,0.666}} )
-			table.insert( verts, {{x,y+1.5,0}, {r,g,b,0.666}} )
+			table.insert( verts, {{x,y,0}, {r,g,b,1}} )
+			table.insert( verts, {{x+1.5,y,0}, {r,g,b,1}} )
+			table.insert( verts, {{x+1.5,y+1.5,0}, {r,g,b,1}} )
+			table.insert( verts, {{x,y+1.5,0}, {r,g,b,1}} )
 		end
 		
 		-- Plot early hits if they are being tracked, at lower opacity
