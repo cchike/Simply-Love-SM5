@@ -6,12 +6,16 @@ local mods = SL[pn].ActiveModifiers
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
-local barWidth = 160
-local barHeight = 10
+local barWidth = 120
+local barHeight = 5
 local tickWidth = 2
 local tickDuration = 0.5
-local numTicks = mods.ErrorBarMultiTick and 10 or 1
+local numTicks = mods.ErrorBarMultiTick and 5 or 1
 local currentTick = 1
+
+local offsets = {} --track all offsets for averaging
+local numArrowsToAvg = mods.ErrorBarMultiTick and 1 or 2
+local offsetScale = 1 --scale the offsets so they're not as jarring on the error bar
 
 local enabledTimingWindows = {}
 
@@ -36,11 +40,27 @@ local function DisplayTick(self, params)
 
         currentTick = currentTick % numTicks + 1
 		
-		local offset = params.TapNoteOffset
+		-- Average the last numArrowsToAvg steps
+		offsets[#offsets+1] = params.TapNoteOffset
+		numOffsets = 0
+		totalOffset = 0;
+		for i = 1, numArrowsToAvg do
+			if #offsets+1-i <= 0 then
+				break
+			end
+			totalOffset = totalOffset + offsets[#offsets+1-i]
+			numOffsets = numOffsets + 1
+		end
+		local offset = totalOffset/numOffsets
+		
 		if math.abs(offset) > maxTimingOffset then
+			-- Round score to the error cap
+			score = "W" .. enabledTimingWindows[#enabledTimingWindows]
 			if offset < 0 then offset = -maxTimingOffset
 			else offset = maxTimingOffset end
 		end
+		
+		offset = offset*offsetScale
 		
 		-- Check if we need to adjust the color for the white fantastic window.
 		local is_W0 = IsW010Judgment(params, player) or (not mods.SmallerWhite and IsW0Judgment(params, player))
@@ -57,7 +77,7 @@ local function DisplayTick(self, params)
         tick:finishtweening()
         bar:finishtweening()
         bar:zoom(1)
-
+		
         if numTicks > 1 then
             tick:diffusealpha(1)
                 :x(offset * wscale)
@@ -102,8 +122,10 @@ end
 -- individually so that there is no overlap.
 local af = Def.ActorFrame{
     InitCommand = function(self)
-        self:xy(GetNotefieldX(player), layout.y)
+	-- y-70 with -90 rotation is centered over the targets
+        self:xy(GetNotefieldX(player), layout.y-70)
         self:GetChild("Bar"):zoom(0)
+		self:rotationz(-90)
     end,
     EarlyHitMessageCommand=function(self, params)
         if params.Player ~= player or hideEarlyJudgment then return end
@@ -199,7 +221,7 @@ for i = 1, numTicks do
     af[#af+1] = Def.Quad{
         Name = "Tick" .. i,
         InitCommand = function(self)
-            self:zoomto(tickWidth, barHeight + 4)
+            self:zoomto(tickWidth, barHeight + 4 + 250)
                 :diffuse(color("#b20000"))
                 :diffusealpha(0)
                 :draworder(100)
