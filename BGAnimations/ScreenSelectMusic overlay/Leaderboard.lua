@@ -126,11 +126,37 @@ local LeaderboardRequestProcessor = function(res, master)
 		local pn = "P"..i
 		local leaderboard = master:GetChild(pn.."Leaderboard")
 		local leaderboardList = master[pn]["Leaderboards"]
+		local boogie = false
+		local boogie_ex = false
+		if res.headers["bs-leaderboard-player-" .. i] == "BS" then
+			boogie = true
+		elseif res.headers["bs-leaderboard-player-" .. i] == "BS-EX" then
+			boogie_ex = true
+		end
 
 		if data[playerStr] then
 			master[pn].isRanked = data[playerStr]["isRanked"]
 
-			if SL["P"..i].ActiveModifiers.ShowEXScore then
+			-- First add the main leaderboard.
+			if boogie then
+				if data[playerStr]["gsLeaderboard"] then
+					leaderboardList[#leaderboardList + 1] = {
+						Name="BoogieStats",
+						Data=DeepCopy(data[playerStr]["gsLeaderboard"]),
+						IsEX=false
+					}
+					master[pn]["LeaderboardIndex"] = 1
+				end
+			elseif boogie_ex then
+				if data[playerStr]["gsLeaderboard"] then
+					leaderboardList[#leaderboardList + 1] = {
+						Name="BoogieStats",
+						Data=DeepCopy(data[playerStr]["gsLeaderboard"]),
+						IsEX=true
+					}
+					master[pn]["LeaderboardIndex"] = 1
+				end
+			elseif SL["P"..i].ActiveModifiers.ShowEXScore then
 				-- If the player is using EX scoring, then we want to display the EX leaderboard first.
 				if data[playerStr]["exLeaderboard"] then
 					leaderboardList[#leaderboardList + 1] = {
@@ -159,7 +185,7 @@ local LeaderboardRequestProcessor = function(res, master)
 					}
 					master[pn]["LeaderboardIndex"] = 1
 				end
-
+				
 				if data[playerStr]["exLeaderboard"] then
 					leaderboardList[#leaderboardList + 1] = {
 						Name="GrooveStats",

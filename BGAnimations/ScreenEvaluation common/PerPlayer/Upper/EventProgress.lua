@@ -1,5 +1,4 @@
 -- File to handle Event specific (ITL/RPG) progress such as song scores, ranking points, quest completions, etc.
--- if not IsServiceAllowed(SL.GrooveStats.AutoSubmit) or GAMESTATE:IsCourseMode() then return end
 
 -- Unsure if it's possible to detect whether the chat module pane is active, so check that the file exists
 local chatModule = FILEMAN:DoesFileExist(THEME:GetCurrentThemeDirectory() .. "Modules/TwitchChat.lua")
@@ -135,6 +134,14 @@ if IsUsingWideScreen() and (chatModule or #GAMESTATE:GetHumanPlayers() > 1) then
 	RowHeight = 45
 end
 
+-- Random Event logo - 400x400px
+-- TODO: SRPG Event logo dir
+local EventLogoDir = THEME:GetCurrentThemeDirectory() .. "Graphics/ITL Online/"
+logoFiles = findFiles(EventLogoDir,"png")
+if #logoFiles > 0 then	
+	logoImage = logoFiles[math.random(#logoFiles)]
+end
+
 local af = Def.ActorFrame{
 	Name="EventProgress"..pn,
 
@@ -185,6 +192,15 @@ local af = Def.ActorFrame{
 		InitCommand=function(self)
 			self:zoomto(paneWidth - borderWidth, paneHeight - borderWidth)
 			self:diffuse(Color.Black):diffusealpha(0.85)
+		end
+	},
+
+	-- Random event logo
+	Def.Sprite {
+		Texture=logoImage,
+		InitCommand=function(self)
+			self:zoom(0.2)
+			self:diffusealpha(0.2)
 		end
 	},
 

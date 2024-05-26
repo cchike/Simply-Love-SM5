@@ -103,7 +103,10 @@ local SongSearchSettings = {
 		if songName then
 			FilterTable(candidates, function(song)
 				return (song:GetDisplayFullTitle():lower():find(songName) ~= nil or
-						song:GetTranslitFullTitle():lower():find(songName) ~= nil)
+						song:GetTranslitFullTitle():lower():find(songName) ~= nil or
+						song:GetDisplayArtist():lower():find(songName) ~= nil or
+						song:GetTranslitArtist():lower():find(songName) ~= nil
+					)
 			end)
 		end
 
@@ -199,7 +202,7 @@ local t = Def.ActorFrame {
 			SCREENMAN:set_input_redirected(player, true)
 		end
 		self:playcommand("HideSortMenu")
-		
+
 		overlay:playcommand("ShowTestInput")
 	end,
 	DirectInputToLeaderboardCommand=function(self)
@@ -211,7 +214,7 @@ local t = Def.ActorFrame {
 			SCREENMAN:set_input_redirected(player, true)
 		end
 		self:playcommand("HideSortMenu")
-		
+
 		overlay:playcommand("ShowLeaderboard")
 	end,
 	-- this returns input back to the engine and its ScreenSelectMusic
@@ -280,11 +283,9 @@ local t = Def.ActorFrame {
 			end
 		end
 		-- Allow players to switch out to a different SL GameMode if no stages have been played yet,
-		-- but don't add the current SL GameMode as a choice. If a player is already in FA+, don't
-		-- present a choice that would allow them to switch to FA+.
+		-- but don't add the current SL GameMode as a choice.
 		if SL.Global.Stages.PlayedThisGame == 0 then
 			if SL.Global.GameMode ~= "ITG"      then table.insert(wheel_options, {"ChangeMode", "ITG"}) end
-			if SL.Global.GameMode ~= "FA+"      then table.insert(wheel_options, {"ChangeMode", "FA+"}) end
 			-- Casual players often choose the wrong mode and an experienced player in the area may notice this
 			-- and offer to switch them back to casual mode. This allows them to do so again.
 			-- It's technically not possible to reach the sort menu in Casual Mode, but juuust in case let's still
@@ -373,7 +374,7 @@ local t = Def.ActorFrame {
 	},
 	-- "Options" text
 	Def.BitmapText{
-		Font="Common Bold",
+		Font=ThemePrefs.Get("ThemeFont") .. " Bold",
 		Text=ScreenString("Options"),
 		InitCommand=function(self)
 			self:xy(_screen.cx, _screen.cy-92):zoom(0.4)
@@ -398,7 +399,7 @@ local t = Def.ActorFrame {
 	},
 	-- "Press SELECT To Cancel" text
 	Def.BitmapText{
-		Font="Common Bold",
+		Font=ThemePrefs.Get("ThemeFont") .. " Bold",
 		Text=ScreenString("Cancel"),
 		InitCommand=function(self)
 			if PREFSMAN:GetPreference("ThreeKeyNavigation") then

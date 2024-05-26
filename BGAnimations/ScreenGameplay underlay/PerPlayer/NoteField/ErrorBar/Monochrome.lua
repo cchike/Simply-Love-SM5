@@ -25,6 +25,8 @@ local player, layout = ...
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
 
+local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
+
 local judgmentColors = {
     TapNoteScore_W1 = SL.JudgmentColors[SL.Global.GameMode][1],
     TapNoteScore_W2 = SL.JudgmentColors[SL.Global.GameMode][2],
@@ -39,18 +41,14 @@ local tickWidth = 2
 local tickDuration = 0.75
 local numTicks = mods.ErrorBarMultiTick and 15 or 1
 local currentTick = 1
-local judgmentToTrim = {
-    TapNoteScore_W3 = mods.ErrorBarTrim == "Excellent" and SL.Global.GameMode == "ITG",
-    TapNoteScore_W4 = (mods.ErrorBarTrim ~= "Off" and SL.Global.GameMode == "ITG") or (mods.ErrorBarTrim == "Excellent" and SL.Global.GameMode == "FA+"),
-    TapNoteScore_W5 = mods.ErrorBarTrim ~= "Off"
-}
+
+-- Find out maximum timing window for error bar
+local maxError = mods.ErrorBarCap < NumJudgmentsAvailable() and mods.ErrorBarCap or NumJudgmentsAvailable()
 
 local enabledTimingWindows = {}
-for i = 1, NumJudgmentsAvailable() do
+for i = 1, maxError do
     if mods.TimingWindows[i] then
-        if not judgmentToTrim["TapNoteScore_W" .. tostring(i)] then
-            enabledTimingWindows[#enabledTimingWindows + 1] = i
-        end
+        enabledTimingWindows[#enabledTimingWindows+1] = i
     end
 end
 
@@ -65,6 +63,12 @@ local function DisplayTick(self, params)
         tick:finishtweening()
 
         local color = judgmentColors[params.TapNoteScore] 
+		
+		local offset = params.TapNoteOffset
+		if math.abs(offset) > maxTimingOffset then
+			if offset < 0 then offset = -maxTimingOffset
+			else offset = maxTimingOffset end
+		end
 
         -- Check if we need to adjust the color for the white fantastic window.
         if mods.ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" and
@@ -74,7 +78,7 @@ local function DisplayTick(self, params)
 
         tick:diffusealpha(1)
             :diffuse(color)
-            :x(params.TapNoteOffset * wscale)
+            :x(offset * wscale)
 
         if numTicks > 1 then
             tick:sleep(0.03):linear(tickDuration - 0.03)
@@ -94,9 +98,8 @@ local af = Def.ActorFrame{
         self:RemoveChild("EarlyLabel")
         self:RemoveChild("LateLabel")
     end,
-    EarlyHitMessageCommand=function(self, params)
+    if params.Player ~= player or hideEarlyJudgment then return end
         if params.Player ~= player then return end
-        if judgmentToTrim[params.TapNoteScore] then return end
 
         DisplayTick(self, params)
     end,
@@ -104,7 +107,6 @@ local af = Def.ActorFrame{
         if params.Player ~= player then return end
         if params.HoldNoteScore then return end
         if not judgmentColors[params.TapNoteScore] then return end
-        if judgmentToTrim[params.TapNoteScore] then return end
 
         if params.EarlyTapNoteScore ~= nil then
             local tns = ToEnumShortString(params.TapNoteScore)
@@ -189,7 +191,7 @@ for i = 1, #enabledTimingWindows do
     
     if mods.ShowFaPlusWindow and wi == 1 then
         -- Split the Fantastic window
-        timing[#timing + 1] = GetTimingWindow(1, "FA+")
+        timing[#timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite)
         timing[#timing + 1] = GetTimingWindow(2, "FA+")
     else
         timing[#timing + 1] = GetTimingWindow(wi)

@@ -127,9 +127,11 @@ for offset=-worst_window, worst_window, 0.001 do
 
 		c = colors[DetermineTimingWindow(offset)]
 
-		if mods.ShowFaPlusPane then
+		if mods.ShowFaPlusWindow and mods.ShowFaPlusPane then
 			abs_offset = math.abs(offset)
-			if abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
+			if mods.SmallerWhite and abs_offset > GetTimingWindow(1, "FA+", true) and abs_offset <= GetTimingWindow(1, "FA+", false) then
+				c = BlendColors(SL.JudgmentColors["FA+"][2], colors[1])
+			elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
 				c = SL.JudgmentColors["FA+"][2]
 			end
 		end
@@ -169,7 +171,7 @@ local pad = 40
 -- avg_timing_error value with "ms" label
 bmts[#bmts+1] = Def.BitmapText{
 	Font="Common Normal",
-	Text=("%.1fms"):format(avg_timing_error),
+	Text=("%.2fms"):format(avg_timing_error),
 	InitCommand=function(self)
 		self:x(pad):zoom(0.8)
 	end,
@@ -178,7 +180,7 @@ bmts[#bmts+1] = Def.BitmapText{
 -- avg_offset value with "ms" label
 bmts[#bmts+1] = Def.BitmapText{
 	Font="Common Normal",
-	Text=("%.1fms"):format(avg_offset),
+	Text=("%.2fms"):format(avg_offset),
 	InitCommand=function(self)
 		self:x(pad + (pane_width-2*pad)/3):zoom(0.8)
 	end,
@@ -187,7 +189,7 @@ bmts[#bmts+1] = Def.BitmapText{
 -- std_dev value with "ms" label
 bmts[#bmts+1] = Def.BitmapText{
 	Font="Common Normal",
-	Text=("%.1fms"):format(std_dev * 3),
+	Text=("%.2fms"):format(std_dev * 3),
 	InitCommand=function(self)
 		self:x(pad + (pane_width-2*pad)/3 * 2):zoom(0.8)
 	end,
@@ -196,7 +198,7 @@ bmts[#bmts+1] = Def.BitmapText{
 -- max_error value with "ms" label
 bmts[#bmts+1] = Def.BitmapText{
 	Font="Common Normal",
-	Text=("%.1fms"):format(max_error),
+	Text=("%.2fms"):format(max_error),
 	InitCommand=function(self)
 		self:x(pane_width-pad):zoom(0.8)
 	end,

@@ -119,9 +119,11 @@ t[#t+1] = Def.ActorFrame {
 }
 
 -- "Event Mode" or CreditText at lower-center of screen
-t[#t+1] = LoadFont("Common Footer")..{
-	InitCommand=function(self) self:xy(_screen.cx, _screen.h-16):zoom(0.5):horizalign(center) end,
-
+t[#t+1] = Def.BitmapText{
+	Font="Mega Footer",
+	InitCommand=function(self)
+		self:xy(_screen.cx, _screen.h-16):zoom(0.5):horizalign(center)
+	end,
 	OnCommand=function(self) self:playcommand("Refresh") end,
 	ScreenChangedMessageCommand=function(self) self:playcommand("Refresh") end,
 	CoinModeChangedMessageCommand=function(self) self:playcommand("Refresh") end,
@@ -130,53 +132,108 @@ t[#t+1] = LoadFont("Common Footer")..{
 
 	RefreshCommand=function(self)
 		local screen = SCREENMAN:GetTopScreen()
-
-		-- if this screen's Metric for ShowCreditDisplay=false, then hide this BitmapText actor
-		-- PS: "ShowCreditDisplay" isn't a real Metric as far as the engine is concerned.
-		-- I invented it for Simply Love and it has (understandably) confused other themers.
-		-- Sorry about this.
-		if screen then
-			self:visible( THEME:GetMetric( screen:GetName(), "ShowCreditDisplay" ) )
-		end
-
-		if PREFSMAN:GetPreference("EventMode") then
-			self:settext( THEME:GetString("ScreenSystemLayer", "EventMode") )
-
-		elseif GAMESTATE:GetCoinMode() == "CoinMode_Pay" then
-			local credits = GetCredits()
-			local text
-
-			if credits.CoinsPerCredit > 1 then
-				text = ("%s     %d     %d/%d"):format(
-					THEME:GetString("ScreenSystemLayer", "CreditsCredits"),
-					credits.Credits,
-					credits.Remainder,
-					credits.CoinsPerCredit
-				)
-			else
-				text = ("%s     %d"):format(
-					THEME:GetString("ScreenSystemLayer", "CreditsCredits"),
-					credits.Credits
-				)
+		if ThemePrefs.Get("ThemeFont") ~= "Mega" then
+			self:visible(false)
+		else
+			-- if this screen's Metric for ShowCreditDisplay=false, then hide this BitmapText actor
+			-- PS: "ShowCreditDisplay" isn't a real Metric as far as the engine is concerned.
+			-- I invented it for Simply Love and it has (understandably) confused other themers.
+			-- Sorry about this.
+			if screen then
+				self:visible( THEME:GetMetric( screen:GetName(), "ShowCreditDisplay" ) )
 			end
 
-			self:settext(text)
+			if PREFSMAN:GetPreference("EventMode") then
+				self:settext( THEME:GetString("ScreenSystemLayer", "EventMode") )
 
-		elseif GAMESTATE:GetCoinMode() == "CoinMode_Free" then
-			self:settext( THEME:GetString("ScreenSystemLayer", "FreePlay") )
+			elseif GAMESTATE:GetCoinMode() == "CoinMode_Pay" then
+				local credits = GetCredits()
+				local text
 
-		elseif GAMESTATE:GetCoinMode() == "CoinMode_Home" then
-			self:settext('')
-		end
+				if credits.CoinsPerCredit > 1 then
+					text = ("%s     %d     %d/%d"):format(
+						THEME:GetString("ScreenSystemLayer", "CreditsCredits"),
+						credits.Credits,
+						credits.Remainder,
+						credits.CoinsPerCredit
+					)
+				else
+					text = ("%s     %d"):format(
+						THEME:GetString("ScreenSystemLayer", "CreditsCredits"),
+						credits.Credits
+					)
+				end
+			end
 
-		local textColor = Color.White
-		local screenName = screen:GetName()
-		if screen ~= nil and (screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo") then
-			if ThemePrefs.Get("VisualStyle") == "SRPG7" then
-				textColor = color(SL.SRPG7.TextColor)
+			local textColor = Color.White
+			local screenName = screen:GetName()
+			if screen ~= nil and (screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo") then
+				if ThemePrefs.Get("VisualStyle") == "SRPG7" then
+					textColor = color(SL.SRPG7.TextColor)
+				end
+
+				self:diffuse(textColor)
 			end
 		end
-		self:diffuse(textColor)
+	end
+}
+
+t[#t+1] = Def.BitmapText{
+	Font="Common Footer",
+	InitCommand=function(self)
+		self:xy(_screen.cx, _screen.h-16):zoom(0.5):horizalign(center)
+	end,
+	OnCommand=function(self) self:playcommand("Refresh") end,
+	ScreenChangedMessageCommand=function(self) self:playcommand("Refresh") end,
+	CoinModeChangedMessageCommand=function(self) self:playcommand("Refresh") end,
+	CoinsChangedMessageCommand=function(self) self:playcommand("Refresh") end,
+	VisualStyleSelectedMessageCommand=function(self) self:playcommand("Refresh") end,
+
+	RefreshCommand=function(self)
+		local screen = SCREENMAN:GetTopScreen()
+		if ThemePrefs.Get("ThemeFont") ~= "Common" then
+			self:visible(false)
+		else
+			-- if this screen's Metric for ShowCreditDisplay=false, then hide this BitmapText actor
+			-- PS: "ShowCreditDisplay" isn't a real Metric as far as the engine is concerned.
+			-- I invented it for Simply Love and it has (understandably) confused other themers.
+			-- Sorry about this.
+			if screen then
+				self:visible( THEME:GetMetric( screen:GetName(), "ShowCreditDisplay" ) )
+			end
+
+			if PREFSMAN:GetPreference("EventMode") then
+				self:settext( THEME:GetString("ScreenSystemLayer", "EventMode") )
+
+			elseif GAMESTATE:GetCoinMode() == "CoinMode_Pay" then
+				local credits = GetCredits()
+				local text
+
+				if credits.CoinsPerCredit > 1 then
+					text = ("%s     %d     %d/%d"):format(
+						THEME:GetString("ScreenSystemLayer", "CreditsCredits"),
+						credits.Credits,
+						credits.Remainder,
+						credits.CoinsPerCredit
+					)
+				else
+					text = ("%s     %d"):format(
+						THEME:GetString("ScreenSystemLayer", "CreditsCredits"),
+						credits.Credits
+					)
+				end
+			end
+
+			local textColor = Color.White
+			local screenName = screen:GetName()
+			if screen ~= nil and (screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo") then
+				if ThemePrefs.Get("VisualStyle") == "SRPG7" then
+					textColor = color(SL.SRPG7.TextColor)
+				end
+
+				self:diffuse(textColor)
+			end
+		end
 	end
 }
 
@@ -362,7 +419,15 @@ local NewSessionRequestProcessor = function(res, gsInfo)
 
 	-- All services are enabled, display a green check.
 	if SL.GrooveStats.GetScores and SL.GrooveStats.Leaderboard and SL.GrooveStats.AutoSubmit then
-		groovestats:settext("✔ GrooveStats")
+		if ThemePrefs.Get("EnableBoogieStats") then
+			if string.find(PREFSMAN:GetPreference("HttpAllowHosts"), "boogiestats.andr.host") then
+				groovestats:settext("✔ BoogieStats")
+			else
+				groovestats:settext("✔ GrooveStats (BoogieStats host not in allow list)")
+			end
+		else
+			groovestats:settext("✔ GrooveStats")
+		end
 		SL.GrooveStats.IsConnected = true
 	-- All services are disabled, display a red X.
 	elseif not SL.GrooveStats.GetScores and not SL.GrooveStats.Leaderboard and not SL.GrooveStats.AutoSubmit then
@@ -425,7 +490,15 @@ t[#t+1] = Def.ActorFrame{
 		VisualStyleSelectedMessageCommand=function(self) DiffuseText(self) end,
 		ResetCommand=function(self)
 			self:visible(ThemePrefs.Get("EnableGrooveStats"))
-			self:settext("     GrooveStats")
+			if ThemePrefs.Get("EnableBoogieStats") then
+				if string.find(PREFSMAN:GetPreference("HttpAllowHosts"), "boogiestats.andr.host") then
+					self:settext("     BoogieStats")
+				else
+					self:settext("     GrooveStats (BoogieStats host not in allow list)")
+				end
+			else
+				self:settext("     GrooveStats")
+			end
 		end
 	},
 
