@@ -22,6 +22,10 @@ local received_judgment_lower_than_desired = false
 -- (but does not reset to 0 between each song in a course)
 local undesirable_judgment_count = 0
 
+local worst_judgment_received = 0
+
+local has_gotten_miss
+
 -- variables for tapnotescore and holdnotescore that need file scope
 local tns, hns
 
@@ -95,7 +99,7 @@ bmt.InitCommand=function(self)
 	local width = GetNotefieldWidth()
 	local NumColumns = GAMESTATE:GetCurrentStyle():ColumnsPerPlayer()
 	-- mirror image of MeasureCounter.lua
-	self:xy(GetNotefieldX(player) + (width/NumColumns), layout.y)
+	self:xy(GetNotefieldX(player) + (width/NumColumns) - 45, layout.y)
 
 	-- Fix overlap issues when MeasureCounter is centered
 	-- since in this case we don't need symmetry.
@@ -127,21 +131,30 @@ bmt.ExCountsChangedMessageCommand=function(self, params)
 		
 		local score = 100-math.floor((total_possible-dp_lost)/total_possible*10000)/100
 		
+		worst_judgment_received = math.max(worst_judgment_received,math.abs(params.note_offset))
+		if ToEnumShortString(params.note_score) == "Miss" then
+			has_gotten_miss = true;
+		end
+		
 		if mods.MiniIndicator == "SubtractiveScoring" then
 			if mods.MiniIndicatorColor == "Default" then
-				if 100-score >= 96 then
+				if has_gotten_miss then
+					self:diffuse(color("#FFFFFF"))
+				elseif worst_judgment_received <= 0.015 then
+					self:diffuse(color("#E928FF"))
+				elseif worst_judgment_received <= 0.023 then
 					self:diffuse(color("#21CCE8"))
-				elseif 100-score >= 89 then
+				elseif worst_judgment_received <= 0.0445 then
 					self:diffuse(color("#e29c18"))
-				elseif 100-score >= 80 then
+				elseif worst_judgment_received <= 0.1035 then
 					self:diffuse(color("#66c955"))
-				elseif 100-score >= 68 then
+				elseif worst_judgment_received <= 0.1365 then
 					self:diffuse(color("#b45cff"))
 				else
 					self:diffuse(Color.Red)
 				end				
 			end
-			self:settext( ("-%.2f%%"):format(score) )
+			self:settext("-" .. tostring(dp_lost*2))
 		elseif mods.MiniIndicator == "PredictiveScoring" then
 			if mods.MiniIndicatorColor == "Default" then
 				if 100-score >= 96 then

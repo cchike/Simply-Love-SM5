@@ -118,6 +118,8 @@ return Def.Actor{
 		if count_updated then
 			-- Broadcast so other elements on ScreenGameplay can process the updated count.
 			local ExScore, actual_points, actual_possible=CalculateExScore(player,storage.ex_counts)
+			local note_offset = params.TapNoteOffset
+			local note_score = params.TapNoteScore
 
 			MESSAGEMAN:Broadcast(
 				"ExCountsChanged",
@@ -126,7 +128,9 @@ return Def.Actor{
 					ExCounts=storage.ex_counts, 
 					ExScore=CalculateExScore(player,storage.ex_counts), 
 					actual_points=actual_points, 
-					actual_possible=actual_possible 
+					actual_possible=actual_possible,
+					note_offset=note_offset,
+					note_score=note_score
 				}
 			)
 		end
