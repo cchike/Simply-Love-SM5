@@ -43,7 +43,7 @@ end
 GetTimingWindow = function(n, mode, tenms)
 	local prefs = SL.Preferences[mode or SL.Global.GameMode]
 	local scale = PREFSMAN:GetPreference("TimingWindowScale")
-	if mode == "FA+" and tenms and n == 1 then
+	if mode == "FA+" and ((tenms and n == 1) or n == 0) then -- Added n == 0 case so for-loops would work more nicely
 		return 0.0085 * scale + prefs.TimingWindowAdd
 	end
 	return prefs["TimingWindowSecondsW"..n] * scale + prefs.TimingWindowAdd

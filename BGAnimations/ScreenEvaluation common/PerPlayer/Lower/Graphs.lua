@@ -66,7 +66,7 @@ if not GAMESTATE:IsCourseMode() then
 		OnCommand=function(self)
 			self:addx(-GraphWidth/2):addy(GraphHeight)
 			-- Lower the opacity otherwise some of the scatter plot points might become hard to see.
-			self:diffusealpha(0.5)
+			self:diffusealpha(0.3)
 			self:queuecommand("Redraw")
 		end,
 	}
@@ -80,6 +80,73 @@ else
 		end,
 	}
 end
+
+-- sequential_offsets gathered in ./BGAnimations/ScreenGameplay overlay/JudgmentOffsetTracking.lua
+local sequential_offsets = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].sequential_offsets
+-- scale worst_window to the worst judgment hit in the song
+-- start at Excellent window as the worst window since most quads are
+-- hard to make sense of visually
+-- EDIT: Removed Excellent start point
+local worst_judge = GetWorstJudgment(sequential_offsets)
+local worst_window = GetTimingWindow(worst_judge)
+
+-- cap worst_window to Excellent if selected by the player
+local mods = SL[pn].ActiveModifiers
+local game_mode = mods.ShowFaPlusWindow and mods.ShowFaPlusPane and "FA+" or "ITG"
+
+if mods.ScaleGraph then
+	worst_judge = math.min(worst_judge,2)
+	worst_window = math.min(worst_window, GetTimingWindow(2))
+end
+
+
+local colors = {}
+
+if game_mode == "FA+" then
+	worst_judge = worst_judge + 1
+	if mods.SmallerWhite then
+		colors[1] = color("#E928FF") -- Magenta
+		for i=1,#SL.JudgmentColors["FA+"] do
+			colors[i+1] = SL.JudgmentColors["FA+"][i]
+		end
+	else
+		colors = SL.JudgmentColors["FA+"]
+	end
+else
+	colors = SL.JudgmentColors["ITG"]
+end
+
+-- Logic for drawing the color coded backgrounds by judgment in the main timing Scatterplot
+local one_if_smaller_white = mods.SmallerWhite and 1 or 0
+for i=(1-one_if_smaller_white),worst_judge do
+	local endpoint = 0
+	if i > (1-one_if_smaller_white) then
+		endpoint = GetTimingWindow(i-1, game_mode)
+	end
+
+	af[#af+1] = Def.Quad{
+		Name="Judge_"..i.."top",
+		InitCommand=function(self)
+			self:vertalign('VertAlign_Bottom')
+			self:zoomto(GraphWidth,(GetTimingWindow(i, game_mode)-endpoint)/worst_window*GraphHeight/2)
+			self:y((1-endpoint/worst_window)*GraphHeight/2 + 0.75)
+			self:diffuse(colors[i+one_if_smaller_white])
+			self:diffusealpha(0.1)
+		end
+	}
+	
+	af[#af+1] = Def.Quad{
+		Name="Judge_"..i.."bottom",
+		InitCommand=function(self)
+			self:vertalign('VertAlign_Top')
+			self:zoomto(GraphWidth,(GetTimingWindow(i, game_mode)-endpoint)/worst_window*GraphHeight/2)
+			self:y((endpoint/worst_window)*GraphHeight/2+GraphHeight/2 + 0.75)
+			self:diffuse(colors[i+one_if_smaller_white])
+			self:diffusealpha(0.1)
+		end
+	}
+end
+
 
 af[#af+1] = LoadActor("./ScatterPlot.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
 

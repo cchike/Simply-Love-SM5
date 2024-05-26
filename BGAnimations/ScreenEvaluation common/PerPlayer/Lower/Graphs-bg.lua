@@ -36,7 +36,7 @@ if not GAMESTATE:IsCourseMode() then
 		OnCommand=function(self)
 			self:addx(-GraphWidth/2):addy(GraphHeight)
 			-- Lower the opacity otherwise some of the scatter plot points might become hard to see.
-			self:diffusealpha(0.5)
+			self:diffusealpha(0.3)
 			self:queuecommand("Redraw")
 		end,
 	}
@@ -63,7 +63,7 @@ for i=1,worst_judge do
 		InitCommand=function(self)
 			self:vertalign('VertAlign_Bottom')
 			self:zoomto(GraphWidth,(GetTimingWindow(i)-endpoint)/worst_window*GraphHeight/2)
-			self:y((1-endpoint/worst_window)*GraphHeight/2)
+			self:y((1-endpoint/worst_window)*GraphHeight/2 + 0.75)
 			self:diffuse(colors[i])
 			self:diffusealpha(0.2)
 		end
@@ -74,7 +74,7 @@ for i=1,worst_judge do
 		InitCommand=function(self)
 			self:vertalign('VertAlign_Top')
 			self:zoomto(GraphWidth,(GetTimingWindow(i)-endpoint)/worst_window*GraphHeight/2)
-			self:y((endpoint/worst_window)*GraphHeight/2+GraphHeight/2)
+			self:y((endpoint/worst_window)*GraphHeight/2+GraphHeight/2 + 0.75)
 			self:diffuse(colors[i])
 			self:diffusealpha(0.2)
 		end
