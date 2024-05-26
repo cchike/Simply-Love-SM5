@@ -49,11 +49,12 @@ local Offset, CurrentSecond, TimingWindow, x, y, c, r, g, b
 -- scale worst_window to the worst judgment hit in the song
 -- start at Excellent window as the worst window since most quads are
 -- hard to make sense of visually
-local worst_window = GetTimingWindow(math.max(2, GetWorstJudgment(sequential_offsets)))
+-- EDIT: Removed Excellent start point
+local worst_window = GetTimingWindow(GetWorstJudgment(sequential_offsets))
 
--- cap worst_window to Great if selected by the player
+-- cap worst_window to Excellent if selected by the player
 if mods.ScaleGraph then
-	worst_window = math.min(worst_window, SL.Global.GameMode == "FA+" and GetTimingWindow(4) or GetTimingWindow(3))
+	worst_window = math.min(worst_window, SL.Global.GameMode == "FA+" and GetTimingWindow(3) or GetTimingWindow(2))
 end
 
 -- ---------------------------------------------
