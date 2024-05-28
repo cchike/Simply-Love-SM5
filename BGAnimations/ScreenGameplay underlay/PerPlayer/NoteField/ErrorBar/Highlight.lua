@@ -14,8 +14,9 @@ local numTicks = mods.ErrorBarMultiTick and 5 or 1
 local currentTick = 1
 
 local offsets = {} --track all offsets for averaging
-local numArrowsToAvg = mods.ErrorBarMultiTick and 1 or 2
-local offsetScale = 1 --scale the offsets so they're not as jarring on the error bar
+local numArrowsToAvg = mods.ErrorBarMultiTick and 1 or mods.HighlightAverage
+local offsetScale = mods.ErrorBarMultiTick and 1 or mods.HighlightZoom --Make the movements on the error bar more or less pronounced
+barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
 
 local enabledTimingWindows = {}
 
@@ -59,8 +60,6 @@ local function DisplayTick(self, params)
 			if offset < 0 then offset = -maxTimingOffset
 			else offset = maxTimingOffset end
 		end
-		
-		offset = offset*offsetScale
 		
 		-- Check if we need to adjust the color for the white fantastic window.
 		local is_W0 = IsW010Judgment(params, player) or (not mods.SmallerWhite and IsW0Judgment(params, player))
@@ -122,7 +121,7 @@ end
 -- individually so that there is no overlap.
 local af = Def.ActorFrame{
     InitCommand = function(self)
-	-- y-70 with -90 rotation is centered over the targets
+	-- y-70 with -90 rotation is centered over the targets (y-43 is lined up with bottom of receptors for 10% mini)
         self:xy(GetNotefieldX(player), layout.y-70)
         self:GetChild("Bar"):zoom(0)
 		self:rotationz(-90)

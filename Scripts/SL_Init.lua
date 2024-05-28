@@ -44,6 +44,8 @@ local PlayerDefaults = {
 				DisplayScorebox = true,
 
 				ErrorBar = "None",
+				HighlightZoom = 1,
+				HighlightAverage = 1,
 				ErrorBarUp = false,
 				ErrorBarMultiTick = false,
 				ErrorBarCap = 5,

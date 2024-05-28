@@ -655,6 +655,26 @@ local Overrides = {
 		Values = { "None", "Colorful", "Monochrome", "Text", "Highlight" },
 	},
 	-------------------------------------------------------------------------
+	HighlightZoom = {
+		Choices = function()
+			local first = 0.25
+			local last = 2
+			local step = 0.25
+			
+			return range(first,last,step)
+		end
+	},
+	-------------------------------------------------------------------------
+	HighlightAverage = {
+		Choices = function()
+			local first = 1
+			local last = 64
+			local step = 1
+			
+			return range(first,last,step)
+		end
+	},
+	-------------------------------------------------------------------------
 	ErrorBarOptions = {
 		SelectType = "SelectMultiple",
 		Values = { "ErrorBarUp", "ErrorBarMultiTick" },

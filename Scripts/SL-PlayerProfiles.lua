@@ -76,6 +76,8 @@ local permitted_profile_settings = {
 	ScaleGraph           = "boolean",
 
 	ErrorBar             = "string",
+	HighlightZoom        = "number",
+	HighlightAverage     = "number",
 	ErrorBarUp           = "boolean",
 	ErrorBarMultiTick    = "boolean",
 	ErrorBarCap    		 = "number",
