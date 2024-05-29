@@ -16,7 +16,7 @@ local af = Def.ActorFrame{
 af[#af+1] = LoadFont("Common Normal")..{
   Text=optionslist,
   InitCommand=function(self)
-    self:y(15)
+    self:vertalign("VertAlign_Top")
     self:zoom(0.8)
     self:wrapwidthpixels(125)
     self:shadowcolor(Color.Black)

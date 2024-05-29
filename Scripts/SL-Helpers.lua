@@ -992,6 +992,10 @@ GetPlayerOptionsString = function(player)
 				optionslist = optionslist..option..", "
 			else
 				optionslist = optionslist..option
+				if SL[pn].ActiveModifiers.ErrorBarHighlight then
+					optionslist = optionslist..", ".."ErrorBar"..SL[pn].ActiveModifiers.HighlightZoom.."x(Avg:"..SL[pn].ActiveModifiers.HighlightAverage..")"
+				end
+
 			end
 		end
 	end
