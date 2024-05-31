@@ -6,17 +6,17 @@ local mods = SL[pn].ActiveModifiers
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
-local barWidth = 120
-local barHeight = 5
+local barWidth = 325
+local barHeight = 7
 local tickWidth = 2
 local tickDuration = 0.5
 local numTicks = mods.ErrorBarMultiTick and 5 or 1
 local currentTick = 1
 
 local offsets = {} --track all offsets for averaging
-local numArrowsToAvg = mods.ErrorBarMultiTick and 1 or mods.HighlightAverage
-local offsetScale = mods.ErrorBarMultiTick and 1 or mods.HighlightZoom --Make the movements on the error bar more or less pronounced
-barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
+local numArrowsToAvg = mods.HighlightAverage
+local offsetScale = mods.HighlightZoom --Make the movements on the error bar more or less pronounced
+--barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
 
 local enabledTimingWindows = {}
 
@@ -61,6 +61,8 @@ local function DisplayTick(self, params)
 			else offset = maxTimingOffset end
 		end
 		
+		offset = offset*offsetScale
+		
 		-- Check if we need to adjust the color for the white fantastic window.
 		local is_W0 = IsW010Judgment(params, player) or (not mods.SmallerWhite and IsW0Judgment(params, player))
         if mods.ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" and
@@ -87,6 +89,9 @@ local function DisplayTick(self, params)
                 :x(offset * wscale)
                 :sleep(tickDuration):diffusealpha(0)
         end
+		
+		-- Disable the error bar rectangle for now
+		window = nil
 		
 		if window then
 			if score == "W0" then
@@ -124,7 +129,7 @@ local af = Def.ActorFrame{
 	-- y-70 with -90 rotation is centered over the targets (y-43 is lined up with bottom of receptors for 10% mini)
         self:xy(GetNotefieldX(player), layout.y-70)
         self:GetChild("Bar"):zoom(0)
-		self:rotationz(-90)
+		--self:rotationz(-90)
     end,
     EarlyHitMessageCommand=function(self, params)
         if params.Player ~= player or hideEarlyJudgment then return end
@@ -163,6 +168,7 @@ local bar_af = Def.ActorFrame{
         InitCommand = function(self)
             self:zoomto(barWidth + 4, barHeight + 4)
                 :diffuse(color("#000000"))
+				:diffusealpha(0)
         end
     },
 }
@@ -191,36 +197,37 @@ for i = 1, #enabledTimingWindows do
     end 
 end
 
+-- Disable the error bar rectangle for now
 -- create two quads for each window.
-for i, window in ipairs(windows.timing) do
-    local x = window * wscale
-    local width = x - lastx
-    local judgmentColor = windows.color[i]
-	local windowNum = i
-	if mods.ShowFaPlusWindow then windowNum = windowNum - 1 end
+-- for i, window in ipairs(windows.timing) do
+    -- local x = window * wscale
+    -- local width = x - lastx
+    -- local judgmentColor = windows.color[i]
+	-- local windowNum = i
+	-- if mods.ShowFaPlusWindow then windowNum = windowNum - 1 end
 
-    bar_af[#bar_af+1] = Def.Quad{
-		Name = "Window" .. "eW" .. windowNum,
-        InitCommand = function(self)
-            self:x(-x):horizalign("left"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
-        end
-    }
-    bar_af[#bar_af+1] = Def.Quad{
-		Name = "Window" .. "lW" .. windowNum,
-        InitCommand = function(self)
-            self:x(x):horizalign("right"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
-        end
-    }
+    -- bar_af[#bar_af+1] = Def.Quad{
+		-- Name = "Window" .. "eW" .. windowNum,
+        -- InitCommand = function(self)
+            -- self:x(-x):horizalign("left"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
+        -- end
+    -- }
+    -- bar_af[#bar_af+1] = Def.Quad{
+		-- Name = "Window" .. "lW" .. windowNum,
+        -- InitCommand = function(self)
+            -- self:x(x):horizalign("right"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
+        -- end
+    -- }
 
-    lastx = x
-end
+    -- lastx = x
+-- end
 
 -- Ticks
 for i = 1, numTicks do
     af[#af+1] = Def.Quad{
         Name = "Tick" .. i,
         InitCommand = function(self)
-            self:zoomto(tickWidth, barHeight + 4 + 250)
+            self:zoomto(tickWidth, barHeight + 4 + 75)
                 :diffuse(color("#b20000"))
                 :diffusealpha(0)
                 :draworder(100)

@@ -652,7 +652,28 @@ local Overrides = {
 	},
 	-------------------------------------------------------------------------
 	ErrorBar = {
-		Values = { "None", "Colorful", "Monochrome", "Text", "Highlight" },
+		SelectType = "SelectMultiple",
+		Values = { "Colorful", "Monochrome", "Text", "Highlight" },
+		LoadSelections = function(self, list, pn)
+			local mods = SL[ToEnumShortString(pn)].ActiveModifiers
+			list[1] = mods.ErrorBarColorful or false
+			list[2] = mods.ErrorBarMonochrome or false
+			list[3] = mods.ErrorBarText or false
+			list[4] = mods.ErrorBarHighlight or false
+			
+			mods.ErrorBar = (list[1] or list[2] or list[3] or list[4]) and "" or "None"
+			return list
+		end,
+		SaveSelections = function(self, list, pn)
+			local mods, playeroptions = GetModsAndPlayerOptions(pn)
+			mods.ErrorBarColorful = list[1]
+			mods.ErrorBarMonochrome = list[2]
+			mods.ErrorBarText = list[3]
+			mods.ErrorBarHighlight = list[4]
+
+			mods.ErrorBar = (list[1] or list[2] or list[3] or list[4]) and "" or "None"
+			
+		end,
 	},
 	-------------------------------------------------------------------------
 	HighlightZoom = {
@@ -667,11 +688,12 @@ local Overrides = {
 	-------------------------------------------------------------------------
 	HighlightAverage = {
 		Choices = function()
-			local first = 1
-			local last = 64
-			local step = 1
+			-- local first = 1
+			-- local last = 64
+			-- local step = 1
 			
-			return range(first,last,step)
+			-- return range(first,last,step)
+			return {1,2,4,8,16,32,64}
 		end
 	},
 	-------------------------------------------------------------------------
@@ -737,48 +759,6 @@ local Overrides = {
 					mods.NotefieldShift = self.Choices[i]
 				end
 			end
-		end
-	},
-	-------------------------------------------------------------------------
-	VisualDelay = {
-		Choices = function()
-			local first	= -100
-			local last 	= 100
-			local step 	= 1
-			return stringify( range(first, last, step), "%gms")
-		end,
-		ExportOnChange = true,
-		LayoutType = "ShowOneInRow",
-		SaveSelections = function(self, list, pn)
-			local mods, playeroptions = GetModsAndPlayerOptions(pn)
-
-			for i=1,#self.Choices do
-				if list[i] then
-					mods.VisualDelay = self.Choices[i]
-				end
-			end
-			playeroptions:VisualDelay( mods.VisualDelay:gsub("ms","")/1000 )
-		end
-	},
-	-------------------------------------------------------------------------
-	VisualDelay = {
-		Choices = function()
-			local first	= -100
-			local last 	= 100
-			local step 	= 1
-			return stringify( range(first, last, step), "%gms")
-		end,
-		ExportOnChange = true,
-		LayoutType = "ShowOneInRow",
-		SaveSelections = function(self, list, pn)
-			local mods, playeroptions = GetModsAndPlayerOptions(pn)
-
-			for i=1,#self.Choices do
-				if list[i] then
-					mods.VisualDelay = self.Choices[i]
-				end
-			end
-			playeroptions:VisualDelay( mods.VisualDelay:gsub("ms","")/1000 )
 		end
 	},
 	-------------------------------------------------------------------------
