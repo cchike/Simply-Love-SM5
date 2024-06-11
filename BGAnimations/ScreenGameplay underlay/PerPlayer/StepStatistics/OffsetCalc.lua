@@ -14,10 +14,12 @@ local num_judgments_available = NumJudgmentsAvailable()
 local worst_window = GetTimingWindow(num_judgments_available)
 
 local mean_taps = 0
-local median_taps = 0
+local mean_offset_taps = 0
+--local median_taps = 0
 local offsets = {}
-local med_seq = {}
+--local med_seq = {}
 local mean_seq = {}
+local mean_offset_seq = {}
 
 -- ---------------------------------------------
 -- MEDIAN, and AVG TIMING ERROR VARIABLES
@@ -34,9 +36,19 @@ local highest_offset_count = 0
 -- sum_timing_error will be used in a loop to sum the total timing error
 -- accumulated over the entire stepchart during gameplay
 local sum_timing_error = 0
+local sum_timing_error_all = 0
 -- we'll divide sum_timing_error by the number of judgments that occured
 -- to get the mean timing error
 local avg_timing_error = 0
+local avg_timing_error_all = 0
+-- sum_timing_offset will be used in a loop to sum the total timing offset
+-- accumulated over the entire stepchart during gameplay
+local sum_timing_offset = 0
+local sum_timing_offset_all = 0
+-- we'll divide sum_timing_offset by the number of judgments that occured
+-- to get the mean timing offset
+local avg_timing_offset = 0
+local avg_timing_offset_all = 0
 
 -- -----------------------------------------------------------------------
 
@@ -57,12 +69,13 @@ af.InitCommand=function(self)
 end
 
 -- -----------------------------------------------------------------------
--- median number
+-- mean offset number (repurposed from median)
 af[#af+1] = LoadFont("Common Normal")..{
 	InitCommand=function(self)
 		self:x(260)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)
-		self:settext("0.0ms")
+		self:settext("0.0/0.0")
+		self:zoom(0.8)
 
 		-- flip alignment and adjust for smaller pane size
 		-- when ultrawide and both players joined
@@ -83,82 +96,104 @@ af[#af+1] = LoadFont("Common Normal")..{
 			alive = false
 		end
 	end,
-	
 	JudgmentMessageCommand=function(self, params)
 		if params.Player ~= player then return end
 		if params.HoldNoteScore then return end
 		if not params.TapNoteScore then return end
 		if params.TapNoteScore == "TapNoteScore_Miss" or params.TapNoteScore == "TapNoteScore_AvoidMine" or params.TapNoteScore == "TapNoteScore_HitMine" then return end
 		
-		median_taps = median_taps + 1
-		
-		local val = (math.floor(params.TapNoteOffset*1000))/1000
-		med_seq[#med_seq+1] = val
-
-		if not offsets[val] then
-			offsets[val] = 1
-		else
-			offsets[val] = offsets[val] + 1
+		mean_offset_taps = mean_offset_taps + 1
+		mean_offset_seq[#mean_offset_seq+1] = params.TapNoteOffset
+		if #mean_offset_seq > 64 then
+			sum_timing_offset = sum_timing_offset - mean_offset_seq[#mean_offset_seq-64]
 		end
 		
-		if #med_seq > 64 then
-			offsets[med_seq[#med_seq-64]] = offsets[med_seq[#med_seq-64]] - 1
-		end
+		sum_timing_offset = sum_timing_offset + params.TapNoteOffset
+		sum_timing_offset_all = sum_timing_offset_all + params.TapNoteOffset
+		avg_timing_offset = sum_timing_offset / math.min(64, mean_offset_taps) * 1000
+		avg_timing_offset_all = sum_timing_offset_all / mean_offset_taps * 1000
 		
-		-- transform a key=value table in the format of offset_value=count
-		-- into an ordered list of offset values
-		-- this will make calculating the median very straightforward
-		local list = {}
-		for offset=-worst_window, worst_window, 0.001 do
-
-			-- TODO: Ruminate over whether rounding to 3 decimal places (millisecond precision)
-			-- is the right thing to be doing here.  Things to consider include:
-			--   • are we losing precision in a way that could impact players?
-			--   • does Lua 5.1's floating point precision come into play here?
-			--   • should hardware (e.g. low polling rates) be considered here?  can it?
-			--   • does the judgment offset histogram really need 10x more verts to draw?
-			offset = round(offset,3)
-
-			if offsets[offset] then
-				for i=1,offsets[offset] do
-					list[#list+1] = offset
-				end
-			end
-		end
+		local offset_text = math.abs(avg_timing_offset) >= 10 and tostring(round(avg_timing_offset)) or ("%.1f"):format(avg_timing_offset)
+		local offset_all_text = math.abs(avg_timing_offset_all) >= 10 and tostring(round(avg_timing_offset_all)) or ("%.1f"):format(avg_timing_offset_all)
 		
-		if #list % 2 == 1 then
-			median_offset = list[math.ceil(#list/2)]
-		else
-			median_offset = (list[#list/2] + list[#list/2+1])/2
-		end
-		
-		self:settext(("%.1fms"):format(median_offset*1000))
+		self:settext(offset_text.."/"..offset_all_text)
 	end,
+	
+	-- JudgmentMessageCommand=function(self, params)
+		-- if params.Player ~= player then return end
+		-- if params.HoldNoteScore then return end
+		-- if not params.TapNoteScore then return end
+		-- if params.TapNoteScore == "TapNoteScore_Miss" or params.TapNoteScore == "TapNoteScore_AvoidMine" or params.TapNoteScore == "TapNoteScore_HitMine" then return end
+		
+		-- median_taps = median_taps + 1
+		
+		-- local val = (math.floor(params.TapNoteOffset*1000))/1000
+		-- med_seq[#med_seq+1] = val
+
+		-- if not offsets[val] then
+			-- offsets[val] = 1
+		-- else
+			-- offsets[val] = offsets[val] + 1
+		-- end
+		
+		-- if #med_seq > 64 then
+			-- offsets[med_seq[#med_seq-64]] = offsets[med_seq[#med_seq-64]] - 1
+		-- end
+		
+		-- -- transform a key=value table in the format of offset_value=count
+		-- -- into an ordered list of offset values
+		-- -- this will make calculating the median very straightforward
+		-- local list = {}
+		-- for offset=-worst_window, worst_window, 0.001 do
+
+			-- -- TODO: Ruminate over whether rounding to 3 decimal places (millisecond precision)
+			-- -- is the right thing to be doing here.  Things to consider include:
+			-- --   • are we losing precision in a way that could impact players?
+			-- --   • does Lua 5.1's floating point precision come into play here?
+			-- --   • should hardware (e.g. low polling rates) be considered here?  can it?
+			-- --   • does the judgment offset histogram really need 10x more verts to draw?
+			-- offset = round(offset,3)
+
+			-- if offsets[offset] then
+				-- for i=1,offsets[offset] do
+					-- list[#list+1] = offset
+				-- end
+			-- end
+		-- end
+		
+		-- if #list % 2 == 1 then
+			-- median_offset = list[math.ceil(#list/2)]
+		-- else
+			-- median_offset = (list[#list/2] + list[#list/2+1])/2
+		-- end
+		
+		-- self:settext(("%.1fms"):format(median_offset*1000))
+	-- end,
 	
 	OnCommand=function(self)
 		if player==PLAYER_1 then
-			self:x( 250 + (total_width-28))
+			self:x( 250 + (total_width-28) + 5)
 		else
-			self:x(-122 - (total_width-28))
+			self:x(-122 - (total_width-28) - 5)
 		end
 
 		-- flip offset when ultrawide and both players
 		if IsUltraWide and #GAMESTATE:GetHumanPlayers() > 1 then
 			if player==PLAYER_1 then
-				self:x(-186 - (total_width-28))
+				self:x(-186 - (total_width-28) - 5)
 			else
-				self:x( 186 + (total_width-28))
+				self:x( 186 + (total_width-28) + 5)
 			end
 		end
 	end
 }
 
--- median label
+-- mean offset label(repurposed from median)
 af[#af+1] = LoadFont("Common Normal")..{
-	Text="Median Offset (64n)",
+	Text="Mean (64n/All [ms])",
 	InitCommand=function(self)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)
-		self:zoom(0.833)
+		self:zoom(0.75)
 
 		-- flip alignment and adjust for smaller pane size
 		-- when ultrawide and both players joined
@@ -196,8 +231,14 @@ af[#af+1] = LoadFont("Common Normal")..{
 			self:x(50 * (player==PLAYER_1 and -1 or 1))
 		end
 
-		self:settext("0.0ms")
+		self:settext("0.0/0.0")
 		total_width = self:GetWidth()
+		if NoteFieldIsCentered then
+			self:settext("0.0")
+			total_width = self:GetWidth()
+			self:settext("0.0/0.0")
+		end
+		self:zoom(0.8)
 	end,
 	
 	JudgmentMessageCommand=function(self, params)
@@ -213,24 +254,29 @@ af[#af+1] = LoadFont("Common Normal")..{
 		end
 		
 		sum_timing_error = sum_timing_error + math.abs(params.TapNoteOffset)
+		sum_timing_error_all = sum_timing_error_all + math.abs(params.TapNoteOffset)
 		avg_timing_error = sum_timing_error / math.min(64, mean_taps) * 1000
+		avg_timing_error_all = sum_timing_error_all / mean_taps * 1000
 		
-		self:settext(("%.1fms"):format(avg_timing_error))
+		local error_text = avg_timing_error >= 10 and tostring(round(avg_timing_error)) or ("%.1f"):format(avg_timing_error)
+		local error_all_text = avg_timing_error_all >= 10 and tostring(round(avg_timing_error_all)) or ("%.1f"):format(avg_timing_error_all)
+		
+		self:settext(error_text.."/"..error_all_text)
 	end,
 	
 	OnCommand=function(self)
 		if player==PLAYER_1 then
-			self:x( 250 + (total_width-28))
+			self:x( 250 + (total_width-28) + 5)
 		else
-			self:x(-122 - (total_width-28))
+			self:x(-122 - (total_width-28) - 5)
 		end
 
 		-- flip offset when ultrawide and both players
 		if IsUltraWide and #GAMESTATE:GetHumanPlayers() > 1 then
 			if player==PLAYER_1 then
-				self:x(-186 - (total_width-28))
+				self:x(-186 - (total_width-28) - 5)
 			else
-				self:x( 186 + (total_width-28))
+				self:x( 186 + (total_width-28) + 5)
 			end
 		end
 	end
@@ -239,13 +285,13 @@ af[#af+1] = LoadFont("Common Normal")..{
 -- mean label
 af[#af+1] = LoadFont("Common Normal")..{
 	InitCommand=function(self)
-		self:zoom(0.833)
+		self:zoom(0.75)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)
 		if IsUltraWide and #GAMESTATE:GetHumanPlayers() > 1 then
 			self:halign( PlayerNumber:Reverse()[OtherPlayer[player]] )
 		end
 
-		self:settext( "Mean Error (64n)" )
+		self:settext( "Mean Abs (64n/All [ms])" )
 	end,
 	OnCommand=function(self)
 		if player==PLAYER_1 then
