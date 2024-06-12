@@ -5,6 +5,7 @@ local NoteFieldIsCentered = (GetNotefieldX(player) == _screen.cx)
 
 -- if no BackgroundFilter is necessary, it's safe to bail now
 if mods.BackgroundFilter == 0 then return end
+local quintin_tarandimo = mods.ShowFaPlusWindow and true or false -- do we want to show quint combo when the user doesnt have FA+ window enabled?
 
 local FilterAlpha = {
 	Dark = 0.5,
@@ -28,13 +29,28 @@ return Def.Quad{
 		end
 	end,
 	OffCommand=function(self) self:queuecommand("ComboFlash") end,
+	JudgmentMessageCommand=function(self, params)
+		if params.Player ~= player then return end
+		if not params.TapNoteScore then return end
+		if params.HoldNoteScore then return end
+		
+		local tns = ToEnumShortString(params.TapNoteScore)
+		if tns == "AvoidMine" then return end
+
+		-- ghetto quint support
+		if not IsW0Judgment(params, player) then quintin_tarandimo = false end
+
+	end,
 	ComboFlashCommand=function(self)
 		local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
 		local FlashColor = nil
 		local WorstAcceptableFC = SL.Preferences[SL.Global.GameMode].MinTNSToHideNotes:gsub("TapNoteScore_W", "")
 
 		for i=1, tonumber(WorstAcceptableFC) do
-			if pss:FullComboOfScore("TapNoteScore_W"..i) then
+			if pss:FullComboOfScore("TapNoteScore_W"..i) and quintin_tarandimo then
+				FlashColor = color("#E928FF")
+				break
+			elseif pss:FullComboOfScore("TapNoteScore_W"..i) then
 				FlashColor = SL.JudgmentColors[SL.Global.GameMode][i]
 				break
 			end
