@@ -73,7 +73,7 @@ end
 for i=1, #TapNoteScores.Types do
 	-- no need to add BitmapText actors for TimingWindows that were turned off
 	if windows[i] or i==#TapNoteScores.Types then
-		t[#t+1] = LoadFont("Common Normal")..{
+		t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 			Text=TapNoteScores.Names[i]:upper(),
 			InitCommand=function(self) self:zoom(0.833):horizalign(right):maxwidth(76) end,
 			BeginCommand=function(self)
@@ -92,7 +92,7 @@ for i=1, #TapNoteScores.Types do
 		}
 		if i==1 and SL[pn].ActiveModifiers.SmallerWhite then
 			local show15 = false
-			t[#t+1] = LoadFont("Common Normal")..{
+			t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				Text="10ms",
 				InitCommand=function(self) self:zoom(0.6):horizalign(right):maxwidth(76) end,
 				BeginCommand=function(self)
@@ -128,7 +128,8 @@ end
 -- labels: hands/ex, holds, mines, rolls
 for index, label in ipairs(RadarCategories) do
 	if index == 1 then
-		text = nil
+		local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite
+		local text = nil
 		if SL[pn].ActiveModifiers.ShowEXScore then
 			text = "ITG"
 		else
@@ -136,7 +137,9 @@ for index, label in ipairs(RadarCategories) do
 		end
 
 
-		t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") == "Common" and "Wendy/_wendy small" or "Mega/_mega font")..{
+		t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") == "Common" and "Wendy/_wendy small"
+							or ThemePrefs.Get("ThemeFont") == "Mega" and "Mega/_mega font"
+							or ThemePrefs.Get("ThemeFont") == "Unprofessional" and "Unprofessional/_unprofessional small")..{
 			Text=text,
 			InitCommand=function(self) self:zoom(0.5):horizalign(right) end,
 			BeginCommand=function(self)
@@ -148,6 +151,23 @@ for index, label in ipairs(RadarCategories) do
 				else
 					self:diffuse( SL.JudgmentColors[SL.Global.GameMode][1] )
 				end
+				self:playcommand("Marquee")
+			end,
+			MarqueeCommand=function(self)
+				if showFaPlusPercent then
+					if SL[pn].ActiveModifiers.SmallerWhite then
+						self:x( (controller == PLAYER_1 and -135) or 108 )
+						self:settext("10FA+")
+					else
+						self:x( (controller == PLAYER_1 and -150) or 93 )
+						self:settext("FA+")
+					end
+				else
+					self:x( (controller == PLAYER_1 and -160) or 90 )
+					self:settext(text)
+				end
+				showFaPlusPercent = not showFaPlusPercent
+				self:sleep(2):queuecommand("Marquee")
 			end
 		}
 	end
@@ -155,7 +175,7 @@ for index, label in ipairs(RadarCategories) do
 	local performance = stats:GetRadarActual():GetValue( "RadarCategory_"..firstToUpper(EnglishRadarCategories[label]) )
 	local possible = stats:GetRadarPossible():GetValue( "RadarCategory_"..firstToUpper(EnglishRadarCategories[label]) )
 
-	t[#t+1] = LoadFont("Common Normal")..{
+	t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Text=label,
 		InitCommand=function(self) self:zoom(0.833):horizalign(right) end,
 		BeginCommand=function(self)
