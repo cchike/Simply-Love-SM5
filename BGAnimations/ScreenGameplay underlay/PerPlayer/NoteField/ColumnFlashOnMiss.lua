@@ -88,7 +88,7 @@ if mods.ColumnFlashOnMiss then
 	local style = GAMESTATE:GetCurrentStyle(player)
 	local width = style:GetWidth(player)
 
-	local y_offset = 80
+	local y_offset = 70
 	
 	local FlashColumn=function(self, params)
 		if params.Player == player and (params.Notes or params.Holds) then
@@ -159,8 +159,8 @@ if mods.ColumnFlashOnMiss then
 				self:diffuse(0,0,0,0)
 					:x((ColumnIndex - (NumColumns/2 + 0.5)) * (width/NumColumns))
 					:vertalign(top)
-					:setsize(width/NumColumns, _screen.h - y_offset)
-					:fadebottom(0.333)
+					:setsize(width/NumColumns, _screen.h - y_offset - 270)
+					:fadebottom(0.2)
 
 				if IsReversedColumn(player, ColumnIndex) then
 					self:rotationz(180)
