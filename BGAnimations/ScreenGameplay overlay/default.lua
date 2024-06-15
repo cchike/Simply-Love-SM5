@@ -44,6 +44,7 @@ for player in ivalues( GAMESTATE:GetHumanPlayers() ) do
 	
 	af[#af+1] = LoadActor("./PerColumnJudgmentGraphics.lua", player)
 	af[#af+1] = LoadActor("./TrackGhostData.lua", player)
+	af[#af+1] = LoadActor("../ScreenGameplay underlay/PerPlayer/NoteField/OffsetDisplay.lua", player)
 	
 
 	-- FIXME: refactor PerColumnJudgmentTracking to not be inside this loop

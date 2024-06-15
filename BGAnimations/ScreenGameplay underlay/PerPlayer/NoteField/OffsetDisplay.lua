@@ -20,7 +20,7 @@ end
 local af = Def.ActorFrame{
     OnCommand = function(self)
 		local opts = GAMESTATE:GetPlayerState(player):GetCurrentPlayerOptions()
-        self:xy(GetNotefieldX(player), _screen.cy)
+        self:xy(GetNotefieldX(player), _screen.cy + mods.NoteFieldOffsetY)
     end,
 
     LoadFont(ThemePrefs.Get("ThemeFont") == "Common" and "Wendy/_wendy small" or "Mega/_mega font")..{
