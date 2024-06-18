@@ -40,7 +40,7 @@ function GetGameplayLayout(player, reverse)
 
     if mods.MeasureCounter ~= "None" then
         if mods.MeasureCounterUp then
-            layout.MeasureCounter = { y = topY - 8 }
+            layout.MeasureCounter = { y = topY - 12 }
             topY = topY - 20
 			if mods.BrokenRun then
 				layout.MeasureCounter.y = layout.MeasureCounter.y - 16
@@ -52,12 +52,12 @@ function GetGameplayLayout(player, reverse)
     end
 
 	if mods.MeasureCounter ~= "None" and mods.MeasureCounterUp and mods.HideLookahead then
-		layout.SubtractiveScoring = { y = layout.MeasureCounter.y }
+		layout.SubtractiveScoring = { y = layout.MeasureCounter.y, addx = 0 }
 	elseif mods.MeasureCounter ~= "None" and  mods.MeasureCounterUp then
-		layout.SubtractiveScoring = { y = bottomY + 8}
-		bottomY = bottomY + 16
+		layout.SubtractiveScoring = { y = topY + 16, addx = -60 }
+		topY = topY - 16
 	else
-		layout.SubtractiveScoring = { y = topY - 8 }
+		layout.SubtractiveScoring = { y = topY - 8, addx = 0 }
 		topY = topY - 16
 	end
 

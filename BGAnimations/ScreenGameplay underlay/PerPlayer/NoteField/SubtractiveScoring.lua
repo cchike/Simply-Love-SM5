@@ -99,7 +99,7 @@ bmt.InitCommand=function(self)
 	local width = GetNotefieldWidth()
 	local NumColumns = GAMESTATE:GetCurrentStyle():ColumnsPerPlayer()
 	-- mirror image of MeasureCounter.lua
-	self:xy(GetNotefieldX(player) + (width/NumColumns) - 45, layout.y)
+	self:xy(GetNotefieldX(player) + (width/NumColumns) - 45 + layout.addx, layout.y)
 
 	-- Fix overlap issues when MeasureCounter is centered
 	-- since in this case we don't need symmetry.
