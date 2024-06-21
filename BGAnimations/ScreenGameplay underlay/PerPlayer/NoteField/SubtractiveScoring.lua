@@ -131,7 +131,7 @@ bmt.ExCountsChangedMessageCommand=function(self, params)
 		
 		local score = 100-math.floor((total_possible-dp_lost)/total_possible*10000)/100
 		
-		worst_judgment_received = math.max(worst_judgment_received,math.abs(params.note_offset))
+		worst_judgment_received = math.max(worst_judgment_received,math.abs(params.note_offset or 0))
 		if ToEnumShortString(params.note_score) == "Miss" then
 			has_gotten_miss = true;
 		end
