@@ -17,7 +17,7 @@ local currentTick = 1
 local offsets = {} --track all offsets for averaging
 local numMillisecondsToAvg = tonumber(mods.HighlightAverageMs:gsub("ms",""), 10)
 local numArrowsToAvg = mods.HighlightAverage
-local offsetScale = mods.HighlightZoom --Make the movements on the error bar more or less pronounced
+local offsetScale = tonumber(mods.HighlightZoom:gsub("x",""), 10) --Make the movements on the error bar more or less pronounced
 --barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
 
 local enabledTimingWindows = {}

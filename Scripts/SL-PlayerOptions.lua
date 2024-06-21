@@ -682,8 +682,9 @@ local Overrides = {
 			local last = 2
 			local step = 0.25
 			
-			return range(first,last,step)
-		end
+			return stringify( range(first, last, step), "%gx")
+		end,
+		LayoutType = "ShowOneInRow"
 	},
 	-------------------------------------------------------------------------
 	HighlightAverage = {
@@ -694,7 +695,8 @@ local Overrides = {
 			
 			-- return range(first,last,step)
 			return {1,2,4,8,16,32,64}
-		end
+		end,
+		LayoutType = "ShowOneInRow"
 	},
 	-------------------------------------------------------------------------
 	HighlightAverageMs = {
