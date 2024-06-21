@@ -697,6 +697,16 @@ local Overrides = {
 		end
 	},
 	-------------------------------------------------------------------------
+	HighlightAverageMs = {
+		Choices = function()
+			local first = 0
+			local last = 2000
+			local step = 100
+			
+			return stringify( range(first, last, step), "%gms")
+		end
+	},
+	-------------------------------------------------------------------------
 	ErrorBarOptions = {
 		SelectType = "SelectMultiple",
 		Values = { "ErrorBarUp", "ErrorBarMultiTick" },

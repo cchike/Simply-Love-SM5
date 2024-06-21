@@ -3,6 +3,7 @@
 local player, layout = ...
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
+local playerState = GAMESTATE:GetPlayerState(player)
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
@@ -14,6 +15,7 @@ local numTicks = mods.ErrorBarMultiTick and 5 or 1
 local currentTick = 1
 
 local offsets = {} --track all offsets for averaging
+local numMillisecondsToAvg = tonumber(mods.HighlightAverageMs:gsub("ms",""), 10)
 local numArrowsToAvg = mods.HighlightAverage
 local offsetScale = mods.HighlightZoom --Make the movements on the error bar more or less pronounced
 --barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
@@ -41,16 +43,38 @@ local function DisplayTick(self, params)
 
         currentTick = currentTick % numTicks + 1
 		
-		-- Average the last numArrowsToAvg steps
-		offsets[#offsets+1] = params.TapNoteOffset
+		local currentTimeMilliseconds = round(playerState:GetSongPosition():GetMusicSeconds(),2) * 1000
+		
+		offsets[#offsets+1] = {currentTimeMilliseconds, params.TapNoteOffset}
 		numOffsets = 0
 		totalOffset = 0;
-		for i = 1, numArrowsToAvg do
-			if #offsets+1-i <= 0 then
-				break
+		local lastOffsetIndex = #offsets
+		if numMillisecondsToAvg == 0 then
+			-- Average the last numArrowsToAvg steps
+			for i = 1, numArrowsToAvg do
+				if #offsets+1-i <= 0 then
+					break
+				end
+				lastOffsetIndex = #offsets+1-i
+				totalOffset = totalOffset + offsets[#offsets+1-i][2]
+				numOffsets = numOffsets + 1
 			end
-			totalOffset = totalOffset + offsets[#offsets+1-i]
-			numOffsets = numOffsets + 1
+		else
+			--Average all steps in the last numMillisecondsToAvg ms
+			for i = 1, #offsets do
+				--If current offset is not within numMillisecondsToAvg ms of the last note hit, then break
+				if currentTimeMilliseconds - offsets[#offsets+1-i][1] > numMillisecondsToAvg then
+					break
+				end
+				lastOffsetIndex = #offsets+1-i
+				totalOffset = totalOffset + offsets[#offsets+1-i][2]
+				numOffsets = numOffsets + 1
+			end
+		end
+		--If numOffsets to average is odd, then discard the last one to make it even
+		if numOffsets > 1 and numOffsets % 2 == 1 then
+			totalOffset = totalOffset - offsets[lastOffsetIndex][2]
+			numOffsets = numOffsets - 1
 		end
 		local offset = totalOffset/numOffsets
 		
@@ -62,6 +86,11 @@ local function DisplayTick(self, params)
 		end
 		
 		offset = offset*offsetScale
+		
+		--Apply an additional correction if not using an average because it's jarring otherwise
+		if numOffsets == 1 then
+			offset = offset*0.75
+		end
 		
 		-- Check if we need to adjust the color for the white fantastic window.
 		local is_W0 = IsW010Judgment(params, player) or (not mods.SmallerWhite and IsW0Judgment(params, player))
