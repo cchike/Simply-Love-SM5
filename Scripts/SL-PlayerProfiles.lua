@@ -110,6 +110,8 @@ local permitted_profile_settings = {
 	FlashExcellent       = "boolean",
 	FlashFantastic       = "boolean",
 	
+	WhiteFlash           = "string",
+	
 	TiltMultiplier       = "number",
 	
 	ComboColors			 = "string",

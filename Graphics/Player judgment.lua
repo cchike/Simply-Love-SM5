@@ -69,8 +69,10 @@ if file_to_load == "None" then
 					
 					for col,tapnote in pairs(param.Notes) do
 						local tnt = ToEnumShortString(tapnote:GetTapNoteType())
-						if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
-							GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
+						if mods.WhiteFlash ~= "Off" and (mods.WhiteFlash == "10ms" or not IsW0Judgment(param, player)) then
+							if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
+								GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
+							end
 						end
 					end
 				end
@@ -242,11 +244,13 @@ return Def.ActorFrame{
 						frame = 1
 						
 						for col,tapnote in pairs(param.Notes) do
-							local tnt = ToEnumShortString(tapnote:GetTapNoteType())
-							if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
-								GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
-							end
-						end
+                            local tnt = ToEnumShortString(tapnote:GetTapNoteType())
+                            if mods.WhiteFlash ~= "Off" and (mods.WhiteFlash == "10ms" or not IsW0Judgment(param, player)) then
+                                if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
+                                    GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
+                                end
+                            end
+                        end
 					end
 				end
 				-- We don't need to adjust the top window otherwise.

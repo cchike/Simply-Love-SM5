@@ -76,6 +76,8 @@ local PlayerDefaults = {
 				FlashExcellent = false,
 				FlashFantastic = false,
 				
+				WhiteFlash = "15ms",
+				
 				TiltMultiplier = 1,
 				ComboColors = "Glow",
 				ComboMode = "FullCombo",

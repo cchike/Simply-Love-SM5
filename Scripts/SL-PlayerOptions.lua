@@ -960,6 +960,9 @@ local Overrides = {
 		SelectType = "SelectMultiple",
 		Values = { "FlashMiss", "FlashWayOff", "FlashDecent", "FlashGreat", "FlashExcellent", "FlashFantastic" }
 	},
+	WhiteFlash = {
+		Values = { "15ms", "10ms", "Off" }
+	},
 	-------------------------------------------------------------------------
 	TiltMultiplier = {
 		Choices = { 0.25, 0.5, 1, 1.5, 2, 2.5, 3 },
