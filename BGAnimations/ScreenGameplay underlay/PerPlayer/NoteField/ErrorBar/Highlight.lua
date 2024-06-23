@@ -38,6 +38,7 @@ local function DisplayTick(self, params)
     local score = ToEnumShortString(params.TapNoteScore)
     if score == "W1" or score == "W2" or score == "W3" or score == "W4" or score == "W5" then
         local tick = self:GetChild("Tick" .. currentTick)
+		local centerTick = self:GetChild("CenterTick")
         local bar = self:GetChild("Bar")
 		local window
 
@@ -105,6 +106,7 @@ local function DisplayTick(self, params)
 		end
 
         tick:finishtweening()
+		centerTick:finishtweening()
         bar:finishtweening()
         bar:zoom(1)
 		
@@ -118,6 +120,11 @@ local function DisplayTick(self, params)
                 :x(offset * wscale)
                 :sleep(tickDuration):diffusealpha(0)
         end
+		
+		if mods.CenterTick then
+			centerTick:diffusealpha(0.3)
+                  :sleep(tickDuration):diffusealpha(0)
+		end
 		
 		-- Disable the error bar rectangle for now
 		window = nil
@@ -263,5 +270,15 @@ for i = 1, numTicks do
         end
     }
 end
+
+af[#af+1] = Def.Quad{
+	Name = "CenterTick",
+	InitCommand = function(self)
+		self:zoomto(1, barHeight + 4 + 75)
+			:diffuse(color("#ffffff"))
+			:diffusealpha(0)
+			:draworder(100)
+	end
+}
 
 return af

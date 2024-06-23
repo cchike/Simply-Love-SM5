@@ -125,6 +125,7 @@ local permitted_profile_settings = {
 	GhostFault           = "boolean",
 	SplitWhites          = "boolean",
 	BreakUI              = "boolean",
+	CenterTick           = "boolean",
 
 	GrowCombo			 = "boolean",
 	SpinCombo			 = "boolean",

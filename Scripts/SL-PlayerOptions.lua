@@ -990,7 +990,7 @@ local Overrides = {
 	-------------------------------------------------------------------------
 	ExtraAesthetics = {
 		SelectType = "SelectMultiple",
-		Values = { "JudgmentBack", "ErrorMSDisplay", "GhostFault", "SplitWhites", "BreakUI" }
+		Values = { "JudgmentBack", "ErrorMSDisplay", "GhostFault", "SplitWhites", "BreakUI", "CenterTick" }
 	},
 	-------------------------------------------------------------------------
 	ScreenAfterPlayerOptions = {
