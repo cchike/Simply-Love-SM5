@@ -90,7 +90,8 @@ local permitted_profile_settings = {
 	ShowFaPlusWindow     = "boolean",
 	ShowEXScore          = "boolean",
 	ShowFaPlusPane       = "boolean",
-	SmallerWhite     = "boolean",
+	SmallerWhite         = "boolean",
+	EightMs              = "string",
 
 	HideEarlyDecentWayOffJudgments = "boolean",
 	HideEarlyDecentWayOffFlash     = "boolean",

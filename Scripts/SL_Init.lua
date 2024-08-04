@@ -62,6 +62,7 @@ local PlayerDefaults = {
 				ShowFaPlusWindow = false,
 				ShowEXScore = false,
 				ShowFaPlusPane = true,
+				EightMs = "Off",
 				
 				PackBanner = false,
 				StepInfo = false,

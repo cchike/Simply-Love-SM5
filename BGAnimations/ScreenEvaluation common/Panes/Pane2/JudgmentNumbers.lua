@@ -2,8 +2,9 @@ local player, controller = unpack(...)
 
 local pn = ToEnumShortString(player)
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
+local eightMsOverride = SL[pn].ActiveModifiers.EightMs ~= "Off"
 
-local CalculateFaPlus = function(ex_counts)
+local CalculateFaPlus = function(ex_counts, eightms)
 	local keys = { "W0", "W1", "W2", "W3", "W4", "W5", "Miss" }
 	local total_taps = 0
 
@@ -14,7 +15,7 @@ local CalculateFaPlus = function(ex_counts)
 		end
 	end
 	if SL[pn].ActiveModifiers.SmallerWhite then
-		return math.max(0, math.floor(ex_counts["W010"]/total_taps * 10000) / 100)
+		return math.max(0, math.floor(ex_counts[eightms and "W0_8" or "W010"]/total_taps * 10000) / 100)
 	end
 	return math.max(0, math.floor(ex_counts["W0"]/total_taps * 10000) / 100)
 end
@@ -65,12 +66,15 @@ for i=1,#TapNoteScores.Types do
 	local window = TapNoteScores.Types[i]
 	local number = counts[window] or 0
 	local number10 = number
-	local display10 = true
+	local number8 = number
+	local display10 = 0
 	
 	if i == 1 then
 		number10 = counts["W010"]
+		number8 = counts["W0_8"]
 	elseif i == 2 then
 		number10 = counts["W110"]
+		number8 = counts["W1_8"]
 	end
 
 	-- actual numbers
@@ -103,14 +107,15 @@ for i=1,#TapNoteScores.Types do
 			end
 		end,
 		MarqueeCommand=function(self)
-			if display10 then
+			if display10 == 0 then
 				self:settext(("%04.0f"):format(number10))
-				display10 = false
-			else
+			elseif display10 == 1 then
 				self:settext(("%04.0f"):format(number))
-				display10 = true
+			elseif display10 == 2 then
+				self:settext(("%04.0f"):format(number8))
 			end
-			self:sleep(2):queuecommand("Marquee")
+			display10 = math.fmod(display10+1,eightMsOverride and 3 or 2) -- Skip 8ms display if 8ms isn't selected
+			self:sleep(eightMsOverride and 1.333 or 2):queuecommand("Marquee") -- Marquee every 1.333 second instead of 2 seconds if 8ms is enabled
 		end
 	}
 
@@ -120,8 +125,9 @@ end
 for index, RCType in ipairs(RadarCategories.Types) do
 	-- Swap to displaying ITG score if we're showing EX score in gameplay.
 	local percent = nil
-	local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite
+	local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite and 0 or 1
 	local faPlusPercent = CalculateFaPlus(counts)
+	local faPlusPercent8 = CalculateFaPlus(counts, true)
 	if SL[pn].ActiveModifiers.ShowEXScore then
 		local PercentDP = pss:GetPercentDancePoints()
 		percent = FormatPercentScore(PercentDP):gsub("%%", "")
@@ -148,13 +154,15 @@ for index, RCType in ipairs(RadarCategories.Types) do
 				self:playcommand("Marquee")
 			end,
 			MarqueeCommand=function(self)
-				if showFaPlusPercent then
+				if showFaPlusPercent == 0 then
 					self:settext(("%.2f"):format(faPlusPercent))
-				else
+				elseif showFaPlusPercent == 1 then
 					self:settext(("%.2f"):format(percent))
+				elseif showFaPlusPercent == 2 then
+					self:settext(("%.2f"):format(faPlusPercent8))
 				end
-				showFaPlusPercent = not showFaPlusPercent
-				self:sleep(2):queuecommand("Marquee")
+				showFaPlusPercent = math.fmod(showFaPlusPercent+1,eightMsOverride and 3 or 2) -- Skip 8ms display if 8ms isn't selected
+				self:sleep(eightMsOverride and 1.333 or 2):queuecommand("Marquee") -- Marquee every 1.333 second instead of 2 seconds if 8ms is enabled
 			end
 		}
 	end

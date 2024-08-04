@@ -11,9 +11,7 @@ local GraphWidth = args.GraphWidth
 local GraphHeight = args.GraphHeight
 local mods = SL[pn].ActiveModifiers
 
-local tenms = mods.SmallerWhite
-local SplitWhites = mods.SplitWhites
-local magenta = color("#E928FF")
+local eightMsOverride = mods.EightMs == "On"
 
 local function TotalCourseLength(player)
     -- utility for graph stuff because i ended up doing this a lot
@@ -107,14 +105,8 @@ for t in ivalues(sequential_offsets) do
 
 		if mods.ShowFaPlusWindow and mods.ShowFaPlusPane then
 			abs_offset = math.abs(Offset)
-			if tenms and SplitWhites then
-				if abs_offset < GetTimingWindow(1, "FA+",tenms) then
-					c = magenta
-				elseif abs_offset > GetTimingWindow(1, "FA+",tens) and abs_offset <= GetTimingWindow(1, "FA+") then
-					c = SL.JudgmentColors["FA+"][1]
-				elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
-					c = SL.JudgmentColors["FA+"][2]
-				end
+			if mods.SmallerWhite and abs_offset <= GetTimingWindow(1, "FA+", true, eightMsOverride) then
+				c = color("#E928FF") -- Magenta
 			elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
 				c = SL.JudgmentColors["FA+"][2]
 			end
@@ -150,7 +142,7 @@ for t in ivalues(sequential_offsets) do
 
 			if mods.ShowFaPlusWindow and mods.ShowFaPlusPane then
 				abs_offset = math.abs(EarlyOffset)
-				if mods.SmallerWhite and abs_offset > GetTimingWindow(1, "FA+", true) and abs_offset <= GetTimingWindow(1, "FA+", false) then
+				if mods.SmallerWhite and abs_offset > GetTimingWindow(1, "FA+", true, eightMsOverride) and abs_offset <= GetTimingWindow(1, "FA+", false) then
 					c = BlendColors(SL.JudgmentColors["FA+"][2], colors[1])
 				elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
 					c = SL.JudgmentColors["FA+"][2]

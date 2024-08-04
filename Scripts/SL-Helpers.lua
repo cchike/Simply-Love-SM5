@@ -40,11 +40,11 @@ end
 -- -----------------------------------------------------------------------
 -- get timing window in milliseconds
 
-GetTimingWindow = function(n, mode, tenms)
+GetTimingWindow = function(n, mode, tenms, eightms)
 	local prefs = SL.Preferences[mode or SL.Global.GameMode]
 	local scale = PREFSMAN:GetPreference("TimingWindowScale")
 	if mode == "FA+" and ((tenms and n == 1) or n == 0) then -- Added n == 0 case so for-loops would work more nicely
-		return 0.0085 * scale + prefs.TimingWindowAdd
+		return (eightms and 0.0065 or 0.0085) * scale + prefs.TimingWindowAdd
 	end
 	return prefs["TimingWindowSecondsW"..n] * scale + prefs.TimingWindowAdd
 end
@@ -647,7 +647,7 @@ IsW0Judgment = function(params, player)
 	return false
 end
 
-IsW010Judgment = function(params, player)
+IsW010Judgment = function(params, player, eightms)
 	if params.Player ~= player then return false end
 	if params.HoldNoteScore then return false end
 	
@@ -656,7 +656,7 @@ IsW010Judgment = function(params, player)
 		local prefs = SL.Preferences["FA+"]
 		local scale = PREFSMAN:GetPreference("TimingWindowScale")
 		local pn = ToEnumShortString(player)
-		local W0 = 0.0085 * scale + prefs["TimingWindowAdd"]
+		local W0 = (eightms and 0.0065 or 0.0085) * scale + prefs["TimingWindowAdd"]
 
 		local offset = math.abs(params.TapNoteOffset)
 		if offset <= W0 then
@@ -709,15 +709,19 @@ GetExJudgmentCounts = function(player)
 		if window == "W1" then
 			local faPlus = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].ex_counts.W0_total
 			local faPlus10 = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].ex_counts.W010_total
+			local faPlus8 = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].ex_counts.W0_8_total
 			-- Subtract FA+ count from the overall fantastic window count.
 			local number10 = number - faPlus10
+			local number8 = number - faPlus8
 			number = number - faPlus
 			
 			-- Populate the two numbers.
 			counts["W0"] = faPlus
 			counts["W010"] = faPlus10
+			counts["W0_8"] = faPlus8
 			counts["W1"] = number
 			counts["W110"] = number10
+			counts["W1_8"] = number8
 			
 		else
 			if ((window ~= "W4" and window ~= "W5") or

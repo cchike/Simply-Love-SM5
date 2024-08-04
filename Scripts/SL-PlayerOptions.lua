@@ -792,6 +792,19 @@ local Overrides = {
 		end
 	},
 	-------------------------------------------------------------------------
+	EightMs = {
+		Values = { "Off", "On", "FastSlow" },
+		SaveSelections = function(self, list, pn)
+			local mods, playeroptions = GetModsAndPlayerOptions(pn)
+
+			for i=1,#self.Choices do
+				if list[i] then
+					mods.EightMs = self.Choices[i]
+				end
+			end
+		end
+	},
+	-------------------------------------------------------------------------
 	VisualDelay = {
 		Choices = function()
 			local first	= -100
@@ -990,7 +1003,7 @@ local Overrides = {
 	-------------------------------------------------------------------------
 	ExtraAesthetics = {
 		SelectType = "SelectMultiple",
-		Values = { "JudgmentBack", "ErrorMSDisplay", "GhostFault", "SplitWhites", "BreakUI", "CenterTick" }
+		Values = { "CenterTick", "JudgmentBack", "ErrorMSDisplay", "GhostFault", "SplitWhites", "BreakUI" }
 	},
 	-------------------------------------------------------------------------
 	ScreenAfterPlayerOptions = {

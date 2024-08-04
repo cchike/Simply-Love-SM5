@@ -4,6 +4,8 @@ local player = ...
 local pn = ToEnumShortString(player)
 local NumPlayers = #GAMESTATE:GetHumanPlayers()
 
+local eightMsOverride = SL[pn].ActiveModifiers.EightMs == "On"
+
 local GraphWidth  = THEME:GetMetric("GraphDisplay", "BodyWidth")
 local GraphHeight = THEME:GetMetric("GraphDisplay", "BodyHeight")
 
@@ -121,14 +123,14 @@ local one_if_smaller_white = mods.SmallerWhite and 1 or 0
 for i=(1-one_if_smaller_white),worst_judge do
 	local endpoint = 0
 	if i > (1-one_if_smaller_white) then
-		endpoint = GetTimingWindow(i-1, game_mode)
+		endpoint = GetTimingWindow(i-1, game_mode, nil, eightMsOverride)
 	end
 
 	af[#af+1] = Def.Quad{
 		Name="Judge_"..i.."top",
 		InitCommand=function(self)
 			self:vertalign('VertAlign_Bottom')
-			self:zoomto(GraphWidth,(GetTimingWindow(i, game_mode)-endpoint)/worst_window*GraphHeight/2)
+			self:zoomto(GraphWidth,(GetTimingWindow(i, game_mode, nil, eightMsOverride)-endpoint)/worst_window*GraphHeight/2)
 			self:y((1-endpoint/worst_window)*GraphHeight/2 + 0.75)
 			self:diffuse(colors[i+one_if_smaller_white])
 			self:diffusealpha(0.1)
@@ -139,7 +141,7 @@ for i=(1-one_if_smaller_white),worst_judge do
 		Name="Judge_"..i.."bottom",
 		InitCommand=function(self)
 			self:vertalign('VertAlign_Top')
-			self:zoomto(GraphWidth,(GetTimingWindow(i, game_mode)-endpoint)/worst_window*GraphHeight/2)
+			self:zoomto(GraphWidth,(GetTimingWindow(i, game_mode, nil, eightMsOverride)-endpoint)/worst_window*GraphHeight/2)
 			self:y((endpoint/worst_window)*GraphHeight/2+GraphHeight/2 + 0.75)
 			self:diffuse(colors[i+one_if_smaller_white])
 			self:diffusealpha(0.1)

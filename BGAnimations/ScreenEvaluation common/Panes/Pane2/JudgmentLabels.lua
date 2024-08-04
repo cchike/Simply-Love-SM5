@@ -3,6 +3,8 @@ local player, controller = unpack(...)
 local pn = ToEnumShortString(player)
 local stats = STATSMAN:GetCurStageStats():GetPlayerStageStats(pn)
 
+local eightMsOverride = SL[pn].ActiveModifiers.EightMs ~= "Off"
+
 local firstToUpper = function(str)
     return (str:gsub("^%l", string.upper))
 end
@@ -91,7 +93,7 @@ for i=1, #TapNoteScores.Types do
 			end
 		}
 		if i==1 and SL[pn].ActiveModifiers.SmallerWhite then
-			local show15 = false
+			local show15 = 0
 			t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				Text="10ms",
 				InitCommand=function(self) self:zoom(0.6):horizalign(right):maxwidth(76) end,
@@ -110,15 +112,15 @@ for i=1, #TapNoteScores.Types do
 					self:playcommand("Marquee")
 				end,
 				MarqueeCommand=function(self)
-					if show15 then
-						self:settext("15ms")
-						show15 = false
-					else
+					if show15 == 0 then
 						self:settext("10ms")
-						show15 = true
+					elseif show15 == 1 then
+						self:settext("15ms")
+					elseif show15 == 2 then
+						self:settext("8ms")
 					end
-					
-					self:sleep(2):queuecommand("Marquee")
+					show15 = math.fmod(show15+1,eightMsOverride and 3 or 2) -- Skip 8ms display if 8ms isn't selected
+					self:sleep(eightMsOverride and 1.333 or 2):queuecommand("Marquee") -- Marquee every 1.333 second instead of 2 seconds if 8ms is enabled
 				end
 			}
 		end
@@ -128,7 +130,7 @@ end
 -- labels: hands/ex, holds, mines, rolls
 for index, label in ipairs(RadarCategories) do
 	if index == 1 then
-		local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite
+		local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite and 0 or 1
 		local text = nil
 		if SL[pn].ActiveModifiers.ShowEXScore then
 			text = "ITG"
@@ -154,7 +156,7 @@ for index, label in ipairs(RadarCategories) do
 				self:playcommand("Marquee")
 			end,
 			MarqueeCommand=function(self)
-				if showFaPlusPercent then
+				if showFaPlusPercent == 0 then
 					if SL[pn].ActiveModifiers.SmallerWhite then
 						self:x( (controller == PLAYER_1 and -135) or 108 )
 						self:settext("10FA+")
@@ -162,12 +164,20 @@ for index, label in ipairs(RadarCategories) do
 						self:x( (controller == PLAYER_1 and -150) or 93 )
 						self:settext("FA+")
 					end
-				else
+				elseif showFaPlusPercent == 1 then
 					self:x( (controller == PLAYER_1 and -160) or 90 )
 					self:settext(text)
+				elseif showFaPlusPercent == 2 then
+					if SL[pn].ActiveModifiers.SmallerWhite then
+						self:x( (controller == PLAYER_1 and -135) or 108 )
+						self:settext("8FA+")
+					else
+						self:x( (controller == PLAYER_1 and -150) or 93 )
+						self:settext("FA+")
+					end
 				end
-				showFaPlusPercent = not showFaPlusPercent
-				self:sleep(2):queuecommand("Marquee")
+				showFaPlusPercent = math.fmod(showFaPlusPercent+1,eightMsOverride and 3 or 2) -- Skip 8ms display if 8ms isn't selected
+				self:sleep(eightMsOverride and 1.333 or 2):queuecommand("Marquee") -- Marquee every 1.333 second instead of 2 seconds if 8ms is enabled
 			end
 		}
 	end

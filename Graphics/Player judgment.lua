@@ -7,6 +7,8 @@ if mods.JudgmentBack then
 	return Def.ActorFrame{Name="Player Judgment"}
 end
 
+local eightMsOverride = mods.EightMs == "On"
+
 -- helper function for returning the player AF
 -- works as expected in ScreenGameplay
 --     arguments:  pn is short string PlayerNumber like "P1" or "P2"
@@ -336,7 +338,7 @@ return Def.ActorFrame{
 			sprite:zoom(1):decelerate(0.2):zoom(0.75):sleep(0.6):accelerate(0.2):zoom(0)
 		end
 		
-		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player) and not IsAutoplay(player) then
+		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player, eightMsOverride) and not IsAutoplay(player) then
 			local splitFrame = 1
 			if spriteGhost:GetNumStates() == 12 or spriteGhost:GetNumStates() == 14 then
 				splitFrame = splitFrame * 2

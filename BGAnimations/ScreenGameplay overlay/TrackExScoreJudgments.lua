@@ -16,6 +16,8 @@ local storage = SL[ToEnumShortString(player)].Stages.Stats[SL.Global.Stages.Play
 local valid_tns = {
 	-- Emulated, not a real TNS.
 	W0 = true,
+	W0_8 = true,
+	W1_8 = true,
 	W010 = true,
 	W110 = true,
 
@@ -40,8 +42,10 @@ return Def.Actor{
 			-- These counts are only tracked while a player hasn't failed.
 			-- This is so that the EX score stops changing once they've failed.
 			W0 = 0,
+			W0_8 = 0,
 			W010 = 0,
 			W1 = 0,
+			W1_8 = 0,
 			W110 = 0,
 			W2 = 0,
 			W3 = 0,
@@ -58,6 +62,7 @@ return Def.Actor{
 			-- still display the total count (whether or not the player has failed).
 			-- Track that separately.
 			W0_total = 0,
+			W0_8_total = 0,
 			W010_total = 0
 		}
 	end,
@@ -82,8 +87,19 @@ return Def.Actor{
 			if TNS == "W1" then
 				-- Check if this W1 is actually in the W0 window
 				local is_W0 = IsW0Judgment(params, player)
+				local is_W0_8 = IsW010Judgment(params, player, true)
 				local is_W010 = IsW010Judgment(params, player)
-				if is_W010 then
+				if is_W0_8 then
+					if not stats:GetFailed() then
+						storage.ex_counts.W0 = storage.ex_counts.W0 + 1
+						storage.ex_counts.W0_8 = storage.ex_counts.W0_8 + 1
+						storage.ex_counts.W010 = storage.ex_counts.W010 + 1
+						count_updated = true
+					end
+					storage.ex_counts.W0_total = storage.ex_counts.W0_total + 1
+					storage.ex_counts.W0_8_total = storage.ex_counts.W0_8_total + 1
+					storage.ex_counts.W010_total = storage.ex_counts.W010_total + 1
+				elseif is_W010 then
 					if not stats:GetFailed() then
 						storage.ex_counts.W0 = storage.ex_counts.W0 + 1
 						storage.ex_counts.W010 = storage.ex_counts.W010 + 1
@@ -95,6 +111,7 @@ return Def.Actor{
 					if not stats:GetFailed() then
 						storage.ex_counts.W0 = storage.ex_counts.W0 + 1
 						storage.ex_counts.W110 = storage.ex_counts.W110 + 1
+						storage.ex_counts.W1_8 = storage.ex_counts.W1_8 + 1
 						count_updated = true
 					end
 					storage.ex_counts.W0_total = storage.ex_counts.W0_total + 1
@@ -102,6 +119,7 @@ return Def.Actor{
 					if not stats:GetFailed() then
 						storage.ex_counts.W1 = storage.ex_counts.W1 + 1
 						storage.ex_counts.W110 = storage.ex_counts.W110 + 1
+						storage.ex_counts.W1_8 = storage.ex_counts.W1_8 + 1
 						count_updated = true
 					end
 				end

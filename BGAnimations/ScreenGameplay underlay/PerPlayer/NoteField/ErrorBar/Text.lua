@@ -3,6 +3,7 @@
 
 local player, layout = ...
 local mods = SL[ToEnumShortString(player)].ActiveModifiers
+local eightMsOverride = mods.EightMs ~= "Off"
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
@@ -10,7 +11,7 @@ local threshold = nil
 for i = 1, NumJudgmentsAvailable() do
     if mods.TimingWindows[i] then
         if i == 1 and mods.ShowFaPlusWindow then
-            threshold = GetTimingWindow(1, "FA+", mods.SmallerWhite)
+            threshold = GetTimingWindow(1, "FA+", mods.SmallerWhite, eightMsOverride)
         else
             threshold = GetTimingWindow(i)
         end
@@ -32,8 +33,10 @@ local function DisplayText(self, params)
 			local scale1 = 1
 			local scale2 = 1
 			
-			if 0.010 < noteOffset and noteOffset <= W1 and mods.SmallerWhite then
-				scale1 = (noteOffset - 0.010)/(W1 - 0.010)
+			local smallerWhiteWindow = GetTimingWindow(1, "FA+", true, eightMsOverride)
+			
+			if smallerWhiteWindow < noteOffset and noteOffset <= W1 and mods.SmallerWhite then
+				scale1 = (noteOffset - smallerWhiteWindow)/(W1 - smallerWhiteWindow)
 			elseif W1 < noteOffset and noteOffset <= W2 then
 				scale2 = (noteOffset - W1)/(W2 - W1)
 			end

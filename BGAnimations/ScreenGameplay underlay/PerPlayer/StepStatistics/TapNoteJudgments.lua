@@ -10,6 +10,8 @@ local total_tapnotes = StepsOrTrail:GetRadarValues(player):GetValue( "RadarCateg
 -- Only add this in ITG mode.
 local ShowFaPlusWindow = SL[pn].ActiveModifiers.ShowFaPlusWindow and SL.Global.GameMode=="ITG"
 
+local eightMsOverride = SL[pn].ActiveModifiers.EightMs == "On"
+
 -- determine how many digits are needed to express the number of notes in base-10
 local digits = (math.floor(math.log10(total_tapnotes)) + 1)
 -- display a minimum 4 digits for aesthetic reasons
@@ -118,14 +120,14 @@ for index, window in ipairs(TNS.Types) do
 			-- Check the top window case for ShowFaPlusWindow.
 			if ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" then
 				local is_W0 = IsW0Judgment(params, player)
-				local is_W010 = IsW010Judgment(params, player)
+				local is_W0_10 = IsW010Judgment(params, player, eightMsOverride)
 				if SL[pn].ActiveModifiers.SmallerWhite then
-					if is_W010 and window == "W0" then
+					if is_W0_10 and window == "W0" then
 						TNS.Judgments[window] = TNS.Judgments[window] + 1
 						incremented = true
 					end
 
-					if not is_W010 and window == "W1" then
+					if not is_W0_10 and window == "W1" then
 						TNS.Judgments[window] = TNS.Judgments[window] + 1
 						incremented = true
 					end
@@ -185,7 +187,7 @@ for index, window in ipairs(TNS.Types) do
 			
 			if index == 1 and SL[pn].ActiveModifiers.SmallerWhite and ShowFaPlusWindow then
 				af[#af+1] = LoadFont("Common Normal")..{
-					Text="(10ms)",
+					Text=eightMsOverride and "(8ms)" or "(10ms)",
 					InitCommand=function(self)
 						self:zoom(0.6):maxwidth(72)
 						self:halign( PlayerNumber:Reverse()[player] )

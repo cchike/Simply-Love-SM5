@@ -24,6 +24,7 @@
 local player, layout = ...
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
+local eightMsOverride = mods.EightMs ~= "Off"
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
@@ -191,7 +192,7 @@ for i = 1, #enabledTimingWindows do
     
     if mods.ShowFaPlusWindow and wi == 1 then
         -- Split the Fantastic window
-        timing[#timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite)
+        timing[#timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite, eightMsOverride)
         timing[#timing + 1] = GetTimingWindow(2, "FA+")
     else
         timing[#timing + 1] = GetTimingWindow(wi)

@@ -3,6 +3,8 @@ local pn, offsets, worst_window, pane_width, pane_height, colors,
 		sum_timing_offset, avg_offset, std_dev, max_error = unpack(...)
 local mods = SL[pn].ActiveModifiers
 
+local eightMsOverride = mods.EightMs == "On"
+
 -- determine which offset was furthest from flawless prior to smoothing
 local worst_offset = 0
 for offset, count in pairs(offsets) do
@@ -129,7 +131,7 @@ for offset=-worst_window, worst_window, 0.001 do
 
 		if mods.ShowFaPlusWindow and mods.ShowFaPlusPane then
 			abs_offset = math.abs(offset)
-			if mods.SmallerWhite and abs_offset <= GetTimingWindow(1, "FA+", true) then
+			if mods.SmallerWhite and abs_offset <= GetTimingWindow(1, "FA+", true, eightMsOverride) then
 				c = color("#E928FF") -- Magenta
 			elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
 				c = SL.JudgmentColors["FA+"][2]
