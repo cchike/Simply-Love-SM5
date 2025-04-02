@@ -8,7 +8,7 @@ local recommended_string = THEME:GetString("RecommendedOptionExplanations", "Rec
 af.OnCommand=function(self)
 	local ScreenName = SCREENMAN:GetTopScreen():GetName()
 	if ScreenName == "ScreenMapControllers"
-	or ScreenName == "ScreenTestInput" then
+	or ScreenName == "ScreenTestInput" or ScreenName == "ScreenBookkeeping" then
 		self:visible(false)
 		return
 	end
@@ -29,7 +29,7 @@ af[#af+1] = Def.Quad{
 }
 
 af[#af+1] = Def.BitmapText{
-	Font="Common Normal",
+	Font=ThemePrefs.Get("ThemeFont") .. " Normal",
 	InitCommand=function(self)
 		self:xy(- bg_width/2 + padding, -bg_height/2 + padding)
 			:valign(0)
@@ -48,7 +48,7 @@ af[#af+1] = Def.ActorFrame{
 	end,
 
 	Def.BitmapText{
-		Font="Common Normal",
+		Font=ThemePrefs.Get("ThemeFont") .. " Normal",
 		InitCommand=function(self)
 			recommended_bmt = self
 

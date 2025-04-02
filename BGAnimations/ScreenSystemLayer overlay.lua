@@ -3,8 +3,8 @@
 
 local t = Def.ActorFrame{
 	InitCommand=function(self)
-		-- In case we loaded the theme with SRPG7 and had Rainbow Mode enabled, disable it.
-		if ThemePrefs.Get("VisualStyle") == "SRPG7" and ThemePrefs.Get("RainbowMode") == true then
+		-- In case we loaded the theme with SRPG8 and had Rainbow Mode enabled, disable it.
+		if ThemePrefs.Get("VisualStyle") == "SRPG8" and ThemePrefs.Get("RainbowMode") == true then
 			ThemePrefs.Set("RainbowMode", false)
 			ThemePrefs.Save()
 		end
@@ -14,7 +14,7 @@ local t = Def.ActorFrame{
 -- -----------------------------------------------------------------------
 
 local function CreditsText( player )
-	return LoadFont("Common Normal") .. {
+	return LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal") .. {
 		InitCommand=function(self)
 			self:visible(false)
 			self:name("Credits" .. PlayerNumberToString(player))
@@ -24,7 +24,18 @@ local function CreditsText( player )
 		UpdateTextCommand=function(self)
 			-- this feels like a holdover from SM3.9 that just never got updated
 			local str = ScreenSystemLayerHelpers.GetCreditsMessage(player)
+			local pn = ToEnumShortString(player)
+			if SL[pn].GrooveStatsUsername ~= "" then
+				str = SL[pn].GrooveStatsUsername
+			end
+
 			self:settext(str)
+		end,
+		SetCreditsTextMessageCommand=function(self, params)
+			if params.pn == ToEnumShortString(player) then
+				self:settext(params.username)
+				self:visible(true)
+			end
 		end,
 		UpdateVisibleCommand=function(self)
 			local screen = SCREENMAN:GetTopScreen()
@@ -38,8 +49,8 @@ local function CreditsText( player )
 
 				local screenName = screen:GetName()
 				if screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo" then
-					if ThemePrefs.Get("VisualStyle") == "SRPG7" then
-						textColor = color(SL.SRPG7.TextColor)
+					if ThemePrefs.Get("VisualStyle") == "SRPG8" then
+						textColor = color(SL.SRPG8.TextColor)
 						shadowLength = 0.4
 					end
 				elseif (screen:GetName() == "ScreenEvaluationStage") or (screen:GetName() == "ScreenEvaluationNonstop") or (screen:GetName() == "ScreenGameplay") then
@@ -168,11 +179,9 @@ t[#t+1] = Def.BitmapText{
 			local textColor = Color.White
 			local screenName = screen:GetName()
 			if screen ~= nil and (screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo") then
-				if ThemePrefs.Get("VisualStyle") == "SRPG7" then
-					textColor = color(SL.SRPG7.TextColor)
+				if ThemePrefs.Get("VisualStyle") == "SRPG8" then
+					textColor = color(SL.SRPG8.TextColor)
 				end
-
-				self:diffuse(textColor)
 			end
 		end
 	end
@@ -223,15 +232,13 @@ t[#t+1] = Def.BitmapText{
 					)
 				end
 			end
+		end
 
-			local textColor = Color.White
-			local screenName = screen:GetName()
-			if screen ~= nil and (screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo") then
-				if ThemePrefs.Get("VisualStyle") == "SRPG7" then
-					textColor = color(SL.SRPG7.TextColor)
-				end
-
-				self:diffuse(textColor)
+		local textColor = Color.White
+		local screenName = screen:GetName()
+		if screen ~= nil and (screenName == "ScreenTitleMenu" or screenName == "ScreenTitleJoin" or screenName == "ScreenLogo") then
+			if ThemePrefs.Get("VisualStyle") == "SRPG8" then
+				textColor = color(SL.SRPG8.TextColor)
 			end
 		end
 	end
@@ -400,15 +407,15 @@ local NewSessionRequestProcessor = function(res, gsInfo)
 		local last_active_event = ThemePrefs.Get("LastActiveEvent")
 
 		for event in ivalues(events) do
-			if event["shortName"] == "SRPG7" then
-				-- If we're already on the SRPG7 theme, then set the last_active_event
+			if event["shortName"] == "SRPG8" then
+				-- If we're already on the SRPG8 theme, then set the last_active_event
 				-- if it's not already set to SRPG so that we don't bring up the prompt.
-				if last_active_event ~= "SRPG7" and style == "SRPG7" then
-					ThemePrefs.Set("LastActiveEvent", "SRPG7")
-					last_active_event = "SRPG7"
+				if last_active_event ~= "SRPG8" and style == "SRPG8" then
+					ThemePrefs.Set("LastActiveEvent", "SRPG8")
+					last_active_event = "SRPG8"
 				end
 			
-				if last_active_event ~= "SRPG7" then
+				if last_active_event ~= "SRPG8" then
 					local top_screen = SCREENMAN:GetTopScreen()
 					top_screen:SetNextScreenName("ScreenPromptToSetSrpgVisualStyle"):StartTransitioningScreen("SM_GoToNextScreen")
 					break
@@ -454,8 +461,8 @@ local function DiffuseText(bmt)
 	if ThemePrefs.Get("RainbowMode") and not HolidayCheer() then
 		textColor = Color.Black
 	end
-	if ThemePrefs.Get("VisualStyle") == "SRPG7" then
-		textColor = color(SL.SRPG7.TextColor)
+	if ThemePrefs.Get("VisualStyle") == "SRPG8" then
+		textColor = color(SL.SRPG8.TextColor)
 		shadowLength = 0.4
 	end
 
@@ -479,7 +486,7 @@ t[#t+1] = Def.ActorFrame{
 		end
 	end,
 
-	LoadFont("Common Normal")..{
+	LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="GrooveStats",
 		Text="     GrooveStats",
 		InitCommand=function(self)
@@ -502,7 +509,7 @@ t[#t+1] = Def.ActorFrame{
 		end
 	},
 
-	LoadFont("Common Normal")..{
+	LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Service1",
 		Text="",
 		InitCommand=function(self)
@@ -513,7 +520,7 @@ t[#t+1] = Def.ActorFrame{
 		ResetCommand=function(self) self:settext("") end
 	},
 
-	LoadFont("Common Normal")..{
+	LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Service2",
 		Text="",
 		InitCommand=function(self)
@@ -524,7 +531,7 @@ t[#t+1] = Def.ActorFrame{
 		ResetCommand=function(self) self:settext("") end
 	},
 
-	LoadFont("Common Normal")..{
+	LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Service3",
 		Text="",
 		InitCommand=function(self)
@@ -567,17 +574,41 @@ LoadUnlocksCache()
 -- or SM(text)
 
 local bmt = nil
+local totalVisibleLines = 19
 
 -- SystemMessage ActorFrame
 t[#t+1] = Def.ActorFrame {
+	InitCommand=function(self)
+		self.IsDisplaying = false
+	end,
+	OnCommand=function(self)
+		self.IsDisplaying = true
+	end,
+	OffCommand=function(self)
+		self.IsDisplaying = false
+	end,
 	SystemMessageMessageCommand=function(self, params)
-		bmt:settext( params.Message )
+		if self.IsDisplaying then
+			self:finishtweening()
+			local newText = bmt:GetText().."\n"..params.Message
+			-- Display only the last few lines of text
+			local lines = {}
+			for line in newText:gmatch("[^\n]+") do
+				lines[#lines+1] = line
+			end
+			local start = math.max(#lines - totalVisibleLines, 1)
+			local displayText = table.concat(lines, "\n", start, #lines)
+			bmt:settext(displayText)
+		else
+			bmt:settext( params.Message )
+		end
 
-		self:playcommand( "On" )
+		self:playcommand( "On", params )
 		if params.NoAnimate then
 			self:finishtweening()
 		end
-		self:playcommand( "Off", params )
+
+		self:sleep(type(params.Duration)=="number" and params.Duration or 3.33 + 0.25):queuecommand("Off")
 	end,
 	HideSystemMessageMessageCommand=function(self) self:finishtweening() end,
 
@@ -599,7 +630,7 @@ t[#t+1] = Def.ActorFrame {
 	},
 
 	-- BitmapText for the SystemMessage
-	LoadFont("Common Normal")..{
+	LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Text",
 		InitCommand=function(self)
 			bmt = self

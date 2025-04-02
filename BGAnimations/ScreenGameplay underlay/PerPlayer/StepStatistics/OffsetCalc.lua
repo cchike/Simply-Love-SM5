@@ -70,7 +70,7 @@ end
 
 -- -----------------------------------------------------------------------
 -- mean offset number (repurposed from median)
-af[#af+1] = LoadFont("Common Normal")..{
+af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 	InitCommand=function(self)
 		self:x(260)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)
@@ -189,7 +189,7 @@ af[#af+1] = LoadFont("Common Normal")..{
 }
 
 -- mean offset label(repurposed from median)
-af[#af+1] = LoadFont("Common Normal")..{
+af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 	Text="Mean (64n/All [ms])",
 	InitCommand=function(self)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)
@@ -222,7 +222,7 @@ af[#af+1] = LoadFont("Common Normal")..{
 
 -- -----------------------------------------------------------------------
 -- mean number
-af[#af+1] = LoadFont("Common Normal")..{
+af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 	InitCommand=function(self)
 		self:xy(260,20)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)
@@ -283,7 +283,7 @@ af[#af+1] = LoadFont("Common Normal")..{
 }
 
 -- mean label
-af[#af+1] = LoadFont("Common Normal")..{
+af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 	InitCommand=function(self)
 		self:zoom(0.75)
 		self:halign(PlayerNumber:Reverse()[player]):vertalign(bottom)

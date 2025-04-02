@@ -161,6 +161,9 @@ if mods.ColumnFlashOnMiss then
 					:vertalign(top)
 					:setsize(width/NumColumns, _screen.h - y_offset - 270)
 					:fadebottom(0.2)
+					
+				local spacing = mods.Spacing:gsub("%%","")/100
+				self:addx((ColumnIndex - (NumColumns/2 + 0.5))*2 * (width/NumColumns) * spacing)
 
 				if IsReversedColumn(player, ColumnIndex) then
 					self:rotationz(180)

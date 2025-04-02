@@ -12,6 +12,8 @@ local IsUltraWide = (GetScreenAspectRatio() > 21/9)
 local NoteFieldIsCentered = (GetNotefieldX(player) == _screen.cx)
 local NumEntries = 5
 
+local style = GAMESTATE:GetCurrentStyle():GetName()
+
 local border = 5
 local width = 162
 local height = 80
@@ -42,9 +44,9 @@ local all_data = {}
 local ResetAllData = function()
 	SL[pn].Rival = {}
 	SL[pn].Rival.Score = 0
-	SL[pn].Rival.EXScore = 0
+	SL[pn].Rival.ExScore = 0
 	SL[pn].Rival.WRScore = 0
-	SL[pn].Rival.WREXScore = 0
+	SL[pn].Rival.WRExScore = 0
 	
 	for i=1,num_styles do
 		local data = {
@@ -89,8 +91,8 @@ local SetScoreData = function(data_idx, score_idx, rank, name, score, isSelf, is
 	
 	if not isFail and (isRival or isSelf) then
 		if data_idx == 3 then
-			if tonumber(score) > SL[pn].Rival.EXScore then
-				SL[pn].Rival.EXScore = tonumber(score)
+			if tonumber(score) > SL[pn].Rival.ExScore then
+				SL[pn].Rival.ExScore = tonumber(score)
 			end
 		else
 			if tonumber(score) > SL[pn].Rival.Score then
@@ -101,7 +103,7 @@ local SetScoreData = function(data_idx, score_idx, rank, name, score, isSelf, is
 	
 	if score_data.rank == 1 then
 		if data_idx == 3 then
-			SL[pn].Rival.WREXScore = tonumber(score)
+			SL[pn].Rival.WRExScore = tonumber(score)
 		else
 			if tonumber(score) > SL[pn].Rival.WRScore then
 				SL[pn].Rival.WRScore = tonumber(score)
@@ -160,11 +162,11 @@ local LeaderboardRequestProcessor = function(res, master)
 		all_data[2].has_data = false
 		
 		local showITG = SL["P"..n].ActiveModifiers.SBITGScore
-		local showEX = SL["P"..n].ActiveModifiers.SBEXScore
+		local showEX = SL["P"..n].ActiveModifiers.SBExScore
 		local showEvents = SL["P"..n].ActiveModifiers.SBEvents
 
 		local numEntries = 0
-		if SL["P"..n].ActiveModifiers.ShowEXScore then
+		if SL["P"..n].ActiveModifiers.ShowExScore then
 			-- If the player is using EX scoring, then we want to display the EX leaderboard first.
 			if showEX then
 				if data[playerStr]["exLeaderboard"] then
@@ -218,6 +220,10 @@ local LeaderboardRequestProcessor = function(res, master)
 										boogie_ex
 									)
 					end
+					numEntries = numEntries + 1
+					for i=math.max(2,numEntries),5,1 do
+						SetScoreData(1, i, "", "", "", "", "", "", true)
+					end
 				end
 			end
 
@@ -235,6 +241,10 @@ local LeaderboardRequestProcessor = function(res, master)
 										entry["isFail"],
 										true
 									)
+					end
+					numEntries = numEntries + 1
+					for i=math.max(2,numEntries),5,1 do
+						SetScoreData(2, i, "", "", "", "", "", "", true)
 					end
 				end
 			end
@@ -261,14 +271,8 @@ local LeaderboardRequestProcessor = function(res, master)
 									)
 					end
 					numEntries = numEntries + 1
-					for i=numEntries,5,1 do
-						SetScoreData(3, i,
-										"",
-										"",
-										"",
-										false,
-										false,
-										false)
+					for i=math.max(2,numEntries),5,1 do
+						SetScoreData(3, i, "", "", "", "", "", "", true)
 					end
 				end
 			end
@@ -292,14 +296,8 @@ local LeaderboardRequestProcessor = function(res, master)
 									)
 					end
 					numEntries = numEntries + 1
-					for i=numEntries,5,1 do
-						SetScoreData(4, i,
-										"",
-										"",
-										"",
-										false,
-										false,
-										false)
+					for i=math.max(2,numEntries),5,1 do
+						SetScoreData(4, i, "", "", "", "", "", "", true)
 					end
 				end
 			end
@@ -313,16 +311,21 @@ end
 local af = Def.ActorFrame{
 	Name="ScoreBox"..pn,
 	InitCommand=function(self)
-		self:xy(70 * (player==PLAYER_1 and 1 or -1), -115)
-		-- offset a bit more when NoteFieldIsCentered
-		if NoteFieldIsCentered and IsUsingWideScreen() then
-			self:addx( 2 * (player==PLAYER_1 and 1 or -1) )
-		end
+		if style ~= "double" then
+			self:xy(70 * (player==PLAYER_1 and 1 or -1), -115)
+			-- offset a bit more when NoteFieldIsCentered
+			if NoteFieldIsCentered and IsUsingWideScreen() then
+				self:addx( 2 * (player==PLAYER_1 and 1 or -1) )
+			end
 
-		-- ultrawide and both players joined
-		if IsUltraWide and #GAMESTATE:GetHumanPlayers() > 1 then
-			self:x(self:GetX() * -1)
+			-- ultrawide and both players joined
+			if IsUltraWide and #GAMESTATE:GetHumanPlayers() > 1 then
+				self:x(self:GetX() * -1)
+			end
+		else
+			self:xy(GetNotefieldWidth() - 140, -115)
 		end
+		
 		self.isFirst = true
 	end,
 	CheckScoreboxCommand=function(self)
@@ -452,13 +455,13 @@ local af = Def.ActorFrame{
 	},
 	-- EX Text
 	Def.BitmapText{
-		Font="Common Normal",
+		Font=ThemePrefs.Get("ThemeFont") .. " Normal",
 		Text="EX",
 		InitCommand=function(self)
 			self:diffusealpha(0.3):x(2):y(-5)
 		end,
 		LoopScoreboxCommand=function(self)
-			if (cur_style == 1 and not SL["P"..n].ActiveModifiers.ShowEXScore) or (cur_style == 0 and SL["P"..n].ActiveModifiers.ShowEXScore) then
+			if (cur_style == 1 and not SL["P"..n].ActiveModifiers.ShowExScore) or (cur_style == 0 and SL["P"..n].ActiveModifiers.ShowExScore) then
 				self:sleep(transition_seconds/2):linear(transition_seconds/2):diffusealpha(0.3)
 			else
 				self:linear(transition_seconds/2):diffusealpha(0)
@@ -467,10 +470,10 @@ local af = Def.ActorFrame{
 	},
 	-- SRPG Logo
 	Def.Sprite{
-		Texture=THEME:GetPathG("", "_VisualStyles/SRPG7/logo_main (doubleres).png"),
-		Name="SRPG7Logo",
+		Texture=THEME:GetPathG("", "_VisualStyles/SRPG8/logo_main (doubleres).png"),
+		Name="SRPG8Logo",
 		InitCommand=function(self)
-			self:diffusealpha(0.4):zoom(0.03):diffusealpha(0)
+			self:diffusealpha(0.4):zoom(0.05):diffusealpha(0)
 		end,
 		LoopScoreboxCommand=function(self)
 			if cur_style == 2 then
@@ -520,7 +523,7 @@ for i=1,NumEntries do
 			end
 		}
 	else
-		af[#af+1] = LoadFont("Common Normal")..{
+		af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 			Name="Rank"..i,
 			Text="",
 			InitCommand=function(self)
@@ -543,7 +546,7 @@ for i=1,NumEntries do
 		}
 	end
 
-	af[#af+1] = LoadFont("Common Normal")..{
+	af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Name"..i,
 		Text="",
 		InitCommand=function(self)
@@ -565,7 +568,7 @@ for i=1,NumEntries do
 		end
 	}
 
-	af[#af+1] = LoadFont("Common Normal")..{
+	af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Score"..i,
 		Text="",
 		InitCommand=function(self)

@@ -132,7 +132,7 @@ for index, label in ipairs(RadarCategories) do
 	if index == 1 then
 		local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite and 0 or 1
 		local text = nil
-		if SL[pn].ActiveModifiers.ShowEXScore then
+		if SL[pn].ActiveModifiers.ShowExScore then
 			text = "ITG"
 		else
 			text = "EX"
@@ -148,7 +148,7 @@ for index, label in ipairs(RadarCategories) do
 				self:x( (controller == PLAYER_1 and -160) or 90 )
 				self:y(38)
 
-				if SL[pn].ActiveModifiers.ShowEXScore then
+				if SL[pn].ActiveModifiers.ShowExScore then
 					self:diffuse(Color.White)
 				else
 					self:diffuse( SL.JudgmentColors[SL.Global.GameMode][1] )

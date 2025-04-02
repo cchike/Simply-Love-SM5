@@ -43,13 +43,21 @@ local tickDuration = 0.75
 local numTicks = mods.ErrorBarMultiTick and 15 or 1
 local currentTick = 1
 
--- Find out maximum timing window for error bar
-local maxError = mods.ErrorBarCap < NumJudgmentsAvailable() and mods.ErrorBarCap or NumJudgmentsAvailable()
-
 local enabledTimingWindows = {}
-for i = 1, maxError do
+
+-- Find out maximum timing window for error bar
+local judgmentToTrim = {
+	TapNoteScore_W2 = mods.ErrorBarTrim == "Fantastic" and SL.Global.GameMode == "ITG",
+    TapNoteScore_W3 = (mods.ErrorBarTrim == "Fantastic" or mods.ErrorBarTrim == "Excellent") and SL.Global.GameMode == "ITG",
+    TapNoteScore_W4 = (mods.ErrorBarTrim ~= "Off" and SL.Global.GameMode == "ITG") or (mods.ErrorBarTrim == "Excellent" and SL.Global.GameMode == "FA+"),
+    TapNoteScore_W5 = mods.ErrorBarTrim ~= "Off"
+}
+
+for i = 1, NumJudgmentsAvailable() do
     if mods.TimingWindows[i] then
-        enabledTimingWindows[#enabledTimingWindows+1] = i
+        if not judgmentToTrim["TapNoteScore_W" .. tostring(i)] then
+            enabledTimingWindows[#enabledTimingWindows + 1] = i
+        end
     end
 end
 
@@ -99,10 +107,10 @@ local af = Def.ActorFrame{
         self:RemoveChild("EarlyLabel")
         self:RemoveChild("LateLabel")
     end,
-    if params.Player ~= player or hideEarlyJudgment then return end
-        if params.Player ~= player then return end
+	EarlyHitMessageCommand=function(self, params)
+		if params.Player ~= player or hideEarlyJudgment then return end
 
-        DisplayTick(self, params)
+		DisplayTick(self, params)
     end,
     JudgmentMessageCommand = function(self, params)
         if params.Player ~= player then return end
@@ -155,7 +163,7 @@ local af = Def.ActorFrame{
 
     -- Indicates which side is which (early/late) These will be be destroyed
     -- after the song starts.
-    LoadFont("Common Normal") .. {
+    LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal") .. {
         Name = "EarlyLabel",
         InitCommand = function(self)
             self:x(-barWidth / 4):zoom(0.7):draworder(100)
@@ -167,7 +175,7 @@ local af = Def.ActorFrame{
                 :sleep(2):smooth(.5):diffusealpha(0)
         end,
     },
-    LoadFont("Common Normal") .. {
+    LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal") .. {
         Name = "LateLabel",
         InitCommand = function(self)
             self:x(barWidth / 4):zoom(0.7):draworder(100)

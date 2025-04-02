@@ -8,6 +8,8 @@ local bpmDisplay, SongPosition
 
 -- -----------------------------------------------------------------------
 
+local xRateText = THEME:GetString("OptionTitles", "MusicRateMultiplier")
+
 -- the update function when a single BPM Display is in use
 local UpdateSingleBPM = function(af)
 	-- BPM stuff first
@@ -21,7 +23,7 @@ local UpdateSingleBPM = function(af)
 
 	-- MusicRate Display
 	MusicRate = string.format("%.2f", MusicRate )
-	MusicRateDisplay:settext( MusicRate ~= "1.00" and MusicRate.."x rate" or "" )
+	MusicRateDisplay:settext( MusicRate ~= "1.00" and MusicRate..xRateText or "" )
 end
 
 -- the update function when two BPM Displays are needed for divergent TimingData (split BPMs)
@@ -36,7 +38,7 @@ local Update2PBPM = function(self)
 	end
 
 	MusicRate = string.format("%.2f", MusicRate )
-	MusicRateDisplay:settext( MusicRate ~= "1.00" and MusicRate.."x rate" or "" )
+	MusicRateDisplay:settext( MusicRate ~= "1.00" and MusicRate..xRateText or "" )
 end
 
 
@@ -45,7 +47,7 @@ local SingleBPMDisplay = function()
 	return Def.ActorFrame{
 		InitCommand=function(self) self:SetUpdateFunction(UpdateSingleBPM) end,
 
-		LoadFont("Common Normal")..{
+		LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 			Name="BPMDisplay",
 			InitCommand=function(self)
 				self:zoom(1)
@@ -59,14 +61,14 @@ local DualBPMDisplay = function()
 	return Def.ActorFrame{
 		InitCommand=function(self) self:SetUpdateFunction(Update2PBPM) end,
 
-		LoadFont("Common Normal")..{
+		LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 			Name="DisplayP1",
 			InitCommand=function(self)
 				self:x(-18):zoom(1):shadowlength(1)
 				dispP1 = self
 			end
 		},
-		LoadFont("Common Normal")..{
+		LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 			Name="DisplayP2",
 			InitCommand=function(self)
 				self:x(18):zoom(1):shadowlength(1)
@@ -95,7 +97,7 @@ local t = Def.ActorFrame{
 		end
 	end,
 
-	LoadFont("Common Normal")..{
+	LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="RatemodDisplay",
 		Text=MusicRate ~= 1 and MusicRate.."x rate" or "",
 		InitCommand=function(self)

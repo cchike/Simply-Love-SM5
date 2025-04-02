@@ -48,9 +48,9 @@ local ResetAllData = function()
 	all_data = {}
 	SL[pn].Rival = {}
 	SL[pn].Rival.Score = 0
-	SL[pn].Rival.EXScore = 0
+	SL[pn].Rival.ExScore = 0
 	SL[pn].Rival.WRScore = 0
-	SL[pn].Rival.WREXScore = 0
+	SL[pn].Rival.WRExScore = 0
 	
 	for i=1,num_styles do
 		local data = {
@@ -95,8 +95,8 @@ local SetScoreData = function(data_idx, score_idx, rank, name, score, isSelf, is
 	
 	if not isFail and (isRival or isSelf) then
 		if data_idx == 3 then
-			if tonumber(score) > SL[pn].Rival.EXScore then
-				SL[pn].Rival.EXScore = tonumber(score)
+			if tonumber(score) > SL[pn].Rival.ExScore then
+				SL[pn].Rival.ExScore = tonumber(score)
 			end
 		else
 			if tonumber(score) > SL[pn].Rival.Score then
@@ -107,7 +107,7 @@ local SetScoreData = function(data_idx, score_idx, rank, name, score, isSelf, is
 	
 	if score_data.rank == 1 then
 		if data_idx == 3 then
-			SL[pn].Rival.WREXScore = tonumber(score)
+			SL[pn].Rival.WRExScore = tonumber(score)
 		else
 			if tonumber(score) > SL[pn].Rival.WRScore then
 				SL[pn].Rival.WRScore = tonumber(score)
@@ -178,11 +178,13 @@ local LeaderboardRequestProcessor = function(res, master)
 		all_data[2].has_data = false
 		
 		local showITG = SL["P"..n].ActiveModifiers.SBITGScore
-		local showEX = SL["P"..n].ActiveModifiers.SBEXScore
+		local showEX = SL["P"..n].ActiveModifiers.SBExScore
 		local showEvents = SL["P"..n].ActiveModifiers.SBEvents
+		
+		cur_style = 0
 
 		local numEntries = 0
-		if SL["P"..n].ActiveModifiers.ShowEXScore then
+		if SL["P"..n].ActiveModifiers.ShowExScore then
 			-- If the player is using EX scoring, then we want to display the EX leaderboard first.		
 			if showEX then
 				if data[playerStr]["exLeaderboard"] then
@@ -200,7 +202,7 @@ local LeaderboardRequestProcessor = function(res, master)
 									)
 					end
 					numEntries = numEntries + 1
-					for i=numEntries,5,1 do
+					for i=math.max(2,numEntries),5,1 do
 						SetScoreData(1, i, "", "", "", "", "", "", true)
 					end
 				end
@@ -222,7 +224,7 @@ local LeaderboardRequestProcessor = function(res, master)
 									)
 					end
 					numEntries = numEntries + 1
-					for i=numEntries,5,1 do
+					for i=math.max(2,numEntries),5,1 do
 						SetScoreData(2, i, "", "", "", "", "", "", boogie_ex)
 					end
 				end
@@ -245,7 +247,7 @@ local LeaderboardRequestProcessor = function(res, master)
 									)
 					end
 					numEntries = numEntries + 1
-					for i=numEntries,5,1 do
+					for i=math.max(2,numEntries),5,1 do
 						SetScoreData(1, i, "", "", "", "", "", "", boogie_ex)
 					end
 				end
@@ -267,7 +269,7 @@ local LeaderboardRequestProcessor = function(res, master)
 									)
 					end
 					numEntries = numEntries + 1
-					for i=numEntries,5,1 do
+					for i=math.max(2,numEntries),5,1 do
 						SetScoreData(2, i, "", "", "", "", "", "", true)
 					end
 				end
@@ -317,10 +319,6 @@ local LeaderboardRequestProcessor = function(res, master)
 						if entry["isSelf"] then
 							UpdateItlExScore(player, SL[pn].Streams.Hash, entry["score"])
 							SL["P"..n].itlScore = entry["score"]
-							local stepartist = SCREENMAN:GetTopScreen():GetChild("Overlay"):GetChild("PerPlayer"):GetChild("StepArtistAF_P"..n)
-							if stepartist ~= nil then
-							  stepartist:queuecommand("ITL")
-							end
 						end
 						numEntries = numEntries + 1
 						SetScoreData(4, numEntries,
@@ -442,7 +440,7 @@ local af = Def.ActorFrame{
 		self:GetChild("GrooveStatsLogo"):stopeffect()
 		self:GetChild("BoogieStatsLogo"):stopeffect()
 		self:GetChild("BoogieStatsEXLogo"):stopeffect()
-		self:GetChild("SRPG7Logo"):visible(true)
+		self:GetChild("SRPG8Logo"):visible(true)
 		self:GetChild("ITLLogo"):visible(true)
 		self:GetChild("Outline"):visible(true)
 		self:GetChild("Background"):linear(transition_seconds/2):diffusealpha(1):visible(true)
@@ -541,7 +539,7 @@ local af = Def.ActorFrame{
 				self:GetParent():GetChild("GrooveStatsLogo"):visible(true):diffusealpha(0.5):glowshift({color("#C8FFFF"), color("#6BF0FF")})
 				self:GetParent():GetChild("BoogieStatsLogo"):visible(false)
 				self:GetParent():GetChild("BoogieStatsEXLogo"):visible(false)
-				self:GetParent():GetChild("SRPG7Logo"):diffusealpha(0):visible(false)
+				self:GetParent():GetChild("SRPG8Logo"):diffusealpha(0):visible(false)
 				self:GetParent():GetChild("ITLLogo"):diffusealpha(0):visible(false)
 				self:GetParent():GetChild("Outline"):diffusealpha(0):visible(false)
 				self:GetParent():GetChild("Background"):diffusealpha(0):visible(false)
@@ -660,13 +658,13 @@ local af = Def.ActorFrame{
 	},
 	-- EX Text
 	Def.BitmapText{
-		Font="Common Normal",
+		Font=ThemePrefs.Get("ThemeFont") .. " Normal",
 		Text="EX",
 		InitCommand=function(self)
 			self:diffusealpha(0):x(2):y(-5)
 		end,
 		LoopScoreboxCommand=function(self)
-			if (cur_style == 1 and not SL["P"..n].ActiveModifiers.ShowEXScore) or (cur_style == 0 and SL["P"..n].ActiveModifiers.ShowEXScore) then
+			if (cur_style == 1 and not SL["P"..n].ActiveModifiers.ShowExScore) or (cur_style == 0 and SL["P"..n].ActiveModifiers.ShowExScore) then
 				self:sleep(transition_seconds/2):linear(transition_seconds/2):diffusealpha(0.3)
 			else
 				self:linear(transition_seconds/2):diffusealpha(0)
@@ -677,10 +675,10 @@ local af = Def.ActorFrame{
 	},
 	-- SRPG Logo
 	Def.Sprite{
-		Texture=THEME:GetPathG("", "_VisualStyles/SRPG7/logo_main (doubleres).png"),
-		Name="SRPG7Logo",
+		Texture=THEME:GetPathG("", "_VisualStyles/SRPG8/logo_main (doubleres).png"),
+		Name="SRPG8Logo",
 		InitCommand=function(self)
-			self:diffusealpha(0.4):zoom(0.03):diffusealpha(0)
+			self:diffusealpha(0.4):zoom(0.05):diffusealpha(0)
 		end,
 		LoopScoreboxCommand=function(self)
 			if cur_style == 2 then
@@ -749,7 +747,7 @@ for i=1,NumEntries do
 			OffCommand=function(self) self:stoptweening() end
 		}
 	else
-		af[#af+1] = LoadFont("Common Normal")..{
+		af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 			Name="Rank"..i,
 			Text="",
 			InitCommand=function(self)
@@ -787,7 +785,7 @@ for i=1,NumEntries do
 		}
 	end
 
-	af[#af+1] = LoadFont("Common Normal")..{
+	af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Name"..i,
 		Text="",
 		InitCommand=function(self)
@@ -824,7 +822,7 @@ for i=1,NumEntries do
 		OffCommand=function(self) self:stoptweening() end
 	}
 
-	af[#af+1] = LoadFont("Common Normal")..{
+	af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Score"..i,
 		Text="",
 		InitCommand=function(self)

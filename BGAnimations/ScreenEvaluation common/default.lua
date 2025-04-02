@@ -51,18 +51,12 @@ t[#t+1] = LoadActor("./Shared/ScreenshotHandler.lua")
 -- code for immediately retrying the song that was just played
 t[#t+1] = LoadActor("./Shared/RestartHandler.lua")
 
--- song background
-t[#t+1] = LoadActor("./Shared/Background.lua")
-
 -- the title of the song and its graphical banner, if there is one
 t[#t+1] = LoadActor("./Shared/TitleAndBanner.lua")
 
 -- text to display BPM range (and ratemod if ~= 1.0) and song length immediately
 -- under the banner
 t[#t+1] = LoadActor("./Shared/SongFeatures.lua")
-
--- text to display Song or Course Length
-t[#t+1] = LoadActor("./Shared/SongLength.lua")
 
 -- store some attributes of this playthrough of this song in the global SL table
 -- for later retrieval on ScreenEvaluationSummary

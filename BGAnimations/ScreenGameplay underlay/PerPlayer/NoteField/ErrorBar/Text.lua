@@ -48,6 +48,7 @@ local function DisplayText(self, params)
                 :diffuse(params.Early and color("#0051db") or color("#ff1605"))
                 :sleep(0.5)
                 :diffusealpha(0)
+            
         else
             self:finishtweening()
             self:diffusealpha(0)
@@ -73,7 +74,7 @@ local af = Def.ActorFrame{
         JudgmentMessageCommand = function(self, params)
             if params.Player ~= player then return end
             if params.HoldNoteScore then return end
-
+                        
             if params.EarlyTapNoteScore ~= nil then
                 local tns = ToEnumShortString(params.TapNoteScore)
                 local earlyTns = ToEnumShortString(params.EarlyTapNoteScore)
@@ -90,7 +91,7 @@ local af = Def.ActorFrame{
                     end
                 end
             end
-
+            
             DisplayText(self, params)
         end
     },

@@ -96,7 +96,7 @@ local GetScoresRequestProcessor = function(res, params)
 
 		-- First check to see if the leaderboard even exists.
 		if data and data[playerStr] then
-			local showExScore = SL["P"..i].ActiveModifiers.ShowEXScore and data[playerStr]["exLeaderboard"] ~= nil
+			local showExScore = SL["P"..i].ActiveModifiers.ShowExScore and data[playerStr]["exLeaderboard"] ~= nil
 			local leaderboardData = nil
 			if showExScore then
 				leaderboardData = data[playerStr]["exLeaderboard"]
@@ -250,20 +250,20 @@ local GetScoresRequestProcessor = function(res, params)
 						loadingText:settext("BoogieStats")
 					elseif boogie_ex then
 						loadingText:settext("Boogie EX")
-					elseif SL["P"..i].ActiveModifiers.ShowEXScore then
-						loadingText:settext("EX Score")
+					elseif SL["P"..i].ActiveModifiers.ShowExScore then
+						loadingText:settext(THEME:GetString("Groovestats", "ExScore"))
 					else
-						loadingText:settext("GrooveStats")
+						loadingText:settext(THEME:GetString("GrooveStats", "GrooveStats"))
 					end
 				else
 					if boogie then
 						loadingText:settext("No Boogie Data")
 					elseif boogie_ex then
 						loadingText:settext("No Boogie EX")
-					elseif SL["P"..i].ActiveModifiers.ShowEXScore then
-						loadingText:settext("No EX Data")
+					elseif SL["P"..i].ActiveModifiers.ShowExScore then
+						loadingText:settext(THEME:GetString("Groovestats", "NoEXData"))
 					else
-						loadingText:settext("No Data")
+						loadingText:settext(THEME:GetString("GrooveStats", "NoData"))
 					end
 				end
 			else
@@ -331,7 +331,7 @@ af[#af+1] = RequestResponseActor(17, 50)..{
 				-- If we disable the service from a previous request, surface it to the user here.
 				for i=1,2 do
 					local loadingText = master:GetChild("PaneDisplayP"..i):GetChild("Loading")
-					loadingText:settext("Disabled")
+					loadingText:settext(THEME:GetString("GrooveStats", "Disabled"))
 					loadingText:visible(true)
 				end
 			end
@@ -361,7 +361,7 @@ af[#af+1] = RequestResponseActor(17, 50)..{
 					requestCacheKey = requestCacheKey .. SL[pn].Streams.Hash .. SL[pn].ApiKey .. pn
 					local loadingText = master:GetChild("PaneDisplayP"..i):GetChild("Loading")
 					loadingText:visible(true)
-					loadingText:settext("Loading ..."):diffuse(Color.Black)
+					loadingText:settext(THEME:GetString("Groovestats", "Loading")):diffuse(Color.Black)
 					sendRequest = true
 				end
 			end
@@ -388,7 +388,7 @@ af[#af+1] = RequestResponseActor(17, 50)..{
 				})
 			end
 		end
-	end
+	end,
 }
 
 for player in ivalues(PlayerNumber) do
@@ -478,7 +478,7 @@ for player in ivalues(PlayerNumber) do
 			Name=item.name,
 
 			-- numerical value
-			LoadFont("Common Normal")..{
+			LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				InitCommand=function(self)
 					self:zoom(text_zoom):diffuse(Color.Black):horizalign(right)
 					self:x(pos.col[col])
@@ -499,7 +499,7 @@ for player in ivalues(PlayerNumber) do
 			},
 
 			-- label
-			LoadFont("Common Normal")..{
+			LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				Text=item.name,
 				InitCommand=function(self)
 					self:zoom(text_zoom):diffuse(Color.Black):horizalign(left)
@@ -511,7 +511,7 @@ for player in ivalues(PlayerNumber) do
 	end
 
 	-- Machine/World Record Machine Tag
-	af2[#af2+1] = LoadFont("Common Normal")..{
+	af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="MachineHighScoreName",
 		InitCommand=function(self)
 			self:zoom(text_zoom):diffuse(Color.Black):maxwidth(30)
@@ -536,7 +536,7 @@ for player in ivalues(PlayerNumber) do
 	}
 
 	-- Machine/World Record HighScore
-	af2[#af2+1] = LoadFont("Common Normal")..{
+	af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="MachineHighScore",
 		InitCommand=function(self)
 			self:zoom(text_zoom):diffuse(Color.Black):horizalign(right)
@@ -564,7 +564,7 @@ for player in ivalues(PlayerNumber) do
 	}
 
 	-- Player Profile/GrooveStats Machine Tag
-	af2[#af2+1] = LoadFont("Common Normal")..{
+	af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="PlayerHighScoreName",
 		InitCommand=function(self)
 			self:zoom(text_zoom):diffuse(Color.Black):maxwidth(30)
@@ -588,7 +588,7 @@ for player in ivalues(PlayerNumber) do
 	}
 
 	-- Player Profile/GrooveStats HighScore
-	af2[#af2+1] = LoadFont("Common Normal")..{
+	af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="PlayerHighScore",
 		InitCommand=function(self)
 			self:zoom(text_zoom):diffuse(Color.Black):horizalign(right)
@@ -614,9 +614,9 @@ for player in ivalues(PlayerNumber) do
 		end
 	}
 
-	af2[#af2+1] = LoadFont("Common Normal")..{
+	af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 		Name="Loading",
-		Text="Loading ... ",
+		Text=THEME:GetString("GrooveStats", "Loading"),
 		InitCommand=function(self)
 			self:zoom(text_zoom):diffuse(Color.Black)
 			self:x(pos.col[3]-15)
@@ -624,7 +624,7 @@ for player in ivalues(PlayerNumber) do
 			self:visible(false)
 		end,
 		SetCommand=function(self)
-			self:settext("Loading ...")
+			self:settext(THEME:GetString("GrooveStats", "Loading"))
 			self:visible(false)
 		end
 	}
@@ -657,7 +657,7 @@ for player in ivalues(PlayerNumber) do
 	if ThemePrefs.Get("MusicWheelGS") == "Pane" then
 		for i=1,3 do
 			-- Rival Machine Tag
-			af2[#af2+1] = LoadFont("Common Normal")..{
+			af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				Name="Rival"..i.."Name",
 				InitCommand=function(self)
 					self:zoom(text_zoom):diffuse(Color.Black):maxwidth(30)
@@ -673,7 +673,7 @@ for player in ivalues(PlayerNumber) do
 			}
 	
 			-- Rival HighScore
-			af2[#af2+1] = LoadFont("Common Normal")..{
+			af2[#af2+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				Name="Rival"..i.."Score",
 				InitCommand=function(self)
 					self:zoom(text_zoom):diffuse(Color.Black):horizalign(right)
