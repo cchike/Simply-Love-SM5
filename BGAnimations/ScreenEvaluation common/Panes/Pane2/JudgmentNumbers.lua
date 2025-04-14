@@ -154,7 +154,12 @@ for index, RCType in ipairs(RadarCategories.Types) do
 				self:playcommand("Marquee")
 			end,
 			MarqueeCommand=function(self)
+				self:diffuse(Color.White)
 				if showFaPlusPercent == 0 then
+					if SL[pn].ActiveModifiers.ShowSuperExScore then
+						faPlusPercent = CalculateSuperExScore(player, counts)
+						self:diffuse(color("#FF00CC"))
+					end
 					self:settext(("%.2f"):format(faPlusPercent))
 				elseif showFaPlusPercent == 1 then
 					self:settext(("%.2f"):format(percent))

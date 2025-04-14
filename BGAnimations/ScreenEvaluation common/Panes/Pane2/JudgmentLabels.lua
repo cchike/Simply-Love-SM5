@@ -158,15 +158,23 @@ for index, label in ipairs(RadarCategories) do
 			MarqueeCommand=function(self)
 				if showFaPlusPercent == 0 then
 					if SL[pn].ActiveModifiers.SmallerWhite then
+						local label = "10FA+"
 						self:x( (controller == PLAYER_1 and -135) or 108 )
-						self:settext("10FA+")
+						if SL[pn].ActiveModifiers.ShowSuperExScore then
+							label = "S.EX"
+							self:diffuse(color('#FF00CC'))
+							self:x( (controller == PLAYER_1 and -141) or 102 )
+						end
+						self:settext(label)
 					else
 						self:x( (controller == PLAYER_1 and -150) or 93 )
 						self:settext("FA+")
+						self:diffuse(Color.White)
 					end
 				elseif showFaPlusPercent == 1 then
 					self:x( (controller == PLAYER_1 and -160) or 90 )
 					self:settext(text)
+					self:diffuse(Color.White)
 				elseif showFaPlusPercent == 2 then
 					if SL[pn].ActiveModifiers.SmallerWhite then
 						self:x( (controller == PLAYER_1 and -135) or 108 )
@@ -175,6 +183,7 @@ for index, label in ipairs(RadarCategories) do
 						self:x( (controller == PLAYER_1 and -150) or 93 )
 						self:settext("FA+")
 					end
+					self:diffuse(Color.White)
 				end
 				showFaPlusPercent = math.fmod(showFaPlusPercent+1,eightMsOverride and 3 or 2) -- Skip 8ms display if 8ms isn't selected
 				self:sleep(eightMsOverride and 1.333 or 2):queuecommand("Marquee") -- Marquee every 1.333 second instead of 2 seconds if 8ms is enabled
