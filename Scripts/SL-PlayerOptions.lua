@@ -812,7 +812,7 @@ local Overrides = {
 
 			for i=1,#self.Choices do
 				if list[i] then
-					mods.EightMs = self.Choices[i]
+					mods.EightMs = self.Values[i]
 				end
 			end
 		end
