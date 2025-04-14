@@ -18,7 +18,7 @@ local af = Def.ActorFrame{
 local ErrorBarTypes = { "Colorful", "Monochrome", "Text", "Highlight", "Average" }
 
 for i, barname in ipairs(ErrorBarTypes) do
-    if mods[barname] then 
+    if mods["ErrorBar" .. barname] then 
         af[#af+1] = LoadActor(barname .. ".lua", player, layout)
     end
 end

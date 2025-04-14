@@ -27,7 +27,7 @@ function GetGameplayLayout(player, reverse)
 	local hasErrorBar = false
 	local ErrorBarTypes = { "Colorful", "Monochrome", "Text", "Highlight", "Average" }
 	for i, barname in ipairs(ErrorBarTypes) do
-		if mods[barname] then 
+		if mods["ErrorBar" .. barname] then 
 			hasErrorBar = true
 			break
 		end

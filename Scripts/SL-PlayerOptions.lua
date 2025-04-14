@@ -675,15 +675,16 @@ local Overrides = {
 	-------------------------------------------------------------------------
 	ErrorBar = {
 		SelectType = "SelectMultiple",
-		Values = { "Colorful", "Monochrome", "Text", "Highlight" },
+		Values = { "Colorful", "Monochrome", "Text", "Highlight", "Average" },
 		LoadSelections = function(self, list, pn)
 			local mods = SL[ToEnumShortString(pn)].ActiveModifiers
 			list[1] = mods.ErrorBarColorful or false
 			list[2] = mods.ErrorBarMonochrome or false
 			list[3] = mods.ErrorBarText or false
 			list[4] = mods.ErrorBarHighlight or false
+			list[5] = mods.ErrorBarAverage or false
 			
-			mods.ErrorBar = (list[1] or list[2] or list[3] or list[4]) and "" or "None"
+			mods.ErrorBar = (list[1] or list[2] or list[3] or list[4] or list[5]) and "" or "None"
 			return list
 		end,
 		SaveSelections = function(self, list, pn)
@@ -692,8 +693,9 @@ local Overrides = {
 			mods.ErrorBarMonochrome = list[2]
 			mods.ErrorBarText = list[3]
 			mods.ErrorBarHighlight = list[4]
+			mods.ErrorBarAverage = list[5]
 
-			mods.ErrorBar = (list[1] or list[2] or list[3] or list[4]) and "" or "None"
+			mods.ErrorBar = (list[1] or list[2] or list[3] or list[4] or list[5]) and "" or "None"
 			
 		end,
 	},

@@ -50,6 +50,7 @@ local PlayerDefaults = {
 				ErrorBarMonochrome = false,
 				ErrorBarText = false,
 				ErrorBarHighlight = false,
+				ErrorBarAverage = false,
 				HighlightZoom = "1x",
 				HighlightAverage = 1,
 				HighlightAverageMs = "0ms",

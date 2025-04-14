@@ -3,23 +3,15 @@
 local player, layout = ...
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
-local playerState = GAMESTATE:GetPlayerState(player)
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
-local barWidth = 325
-local barHeight = 7
+local barWidth = 160
+local barHeight = 10
 local tickWidth = 2
 local tickDuration = 0.5
-local numTicks = mods.ErrorBarMultiTick and 5 or 1
+local numTicks = mods.ErrorBarMultiTick and 10 or 1
 local currentTick = 1
-local eightMsOverride = mods.EightMs ~= "Off"
-
-local offsets = {} --track all offsets for averaging
-local numMillisecondsToAvg = tonumber(mods.HighlightAverageMs:gsub("ms",""), 10)
-local numArrowsToAvg = mods.HighlightAverage
-local offsetScale = tonumber(mods.HighlightZoom:gsub("x",""), 10) --Make the movements on the error bar more or less pronounced
---barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
 
 local enabledTimingWindows = {}
 
@@ -46,63 +38,19 @@ local function DisplayTick(self, params)
     local score = ToEnumShortString(params.TapNoteScore)
     if score == "W1" or score == "W2" or score == "W3" or score == "W4" or score == "W5" then
         local tick = self:GetChild("Tick" .. currentTick)
-		local centerTick = self:GetChild("CenterTick")
         local bar = self:GetChild("Bar")
 		local window
 
         currentTick = currentTick % numTicks + 1
 		
-		local currentTimeMilliseconds = round(playerState:GetSongPosition():GetMusicSeconds(),2) * 1000
-		
-		offsets[#offsets+1] = {currentTimeMilliseconds, params.TapNoteOffset}
-		numOffsets = 0
-		totalOffset = 0;
-		local lastOffsetIndex = #offsets
-		if numMillisecondsToAvg == 0 then
-			-- Average the last numArrowsToAvg steps
-			for i = 1, numArrowsToAvg do
-				if #offsets+1-i <= 0 then
-					break
-				end
-				lastOffsetIndex = #offsets+1-i
-				totalOffset = totalOffset + offsets[#offsets+1-i][2]
-				numOffsets = numOffsets + 1
-			end
-		else
-			--Average all steps in the last numMillisecondsToAvg ms
-			for i = 1, #offsets do
-				--If current offset is not within numMillisecondsToAvg ms of the last note hit, then break
-				if currentTimeMilliseconds - offsets[#offsets+1-i][1] > numMillisecondsToAvg then
-					break
-				end
-				lastOffsetIndex = #offsets+1-i
-				totalOffset = totalOffset + offsets[#offsets+1-i][2]
-				numOffsets = numOffsets + 1
-			end
-		end
-		--If numOffsets to average is odd, then discard the last one to make it even
-		if numOffsets > 1 and numOffsets % 2 == 1 then
-			totalOffset = totalOffset - offsets[lastOffsetIndex][2]
-			numOffsets = numOffsets - 1
-		end
-		local offset = totalOffset/numOffsets
-		
+		local offset = params.TapNoteOffset
 		if math.abs(offset) > maxTimingOffset then
-			-- Round score to the error cap
-			score = "W" .. enabledTimingWindows[#enabledTimingWindows]
 			if offset < 0 then offset = -maxTimingOffset
 			else offset = maxTimingOffset end
 		end
 		
-		offset = offset*offsetScale
-		
-		--Apply an additional correction if not using an average because it's jarring otherwise
-		if numOffsets == 1 then
-			offset = offset*0.75
-		end
-		
 		-- Check if we need to adjust the color for the white fantastic window.
-		local is_W0 = IsW010Judgment(params, player, eightMsOverride) or (not mods.SmallerWhite and IsW0Judgment(params, player))
+		local is_W0 = IsW010Judgment(params, player) or (not mods.SmallerWhite and IsW0Judgment(params, player))
         if mods.ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" and
             is_W0 then
             score = "W0"
@@ -114,10 +62,9 @@ local function DisplayTick(self, params)
 		end
 
         tick:finishtweening()
-		centerTick:finishtweening()
         bar:finishtweening()
         bar:zoom(1)
-		
+
         if numTicks > 1 then
             tick:diffusealpha(1)
                 :x(offset * wscale)
@@ -128,14 +75,6 @@ local function DisplayTick(self, params)
                 :x(offset * wscale)
                 :sleep(tickDuration):diffusealpha(0)
         end
-		
-		if mods.CenterTick then
-			centerTick:diffusealpha(0.3)
-                  :sleep(tickDuration):diffusealpha(0)
-		end
-		
-		-- Disable the error bar rectangle for now
-		window = nil
 		
 		if window then
 			if score == "W0" then
@@ -170,10 +109,8 @@ end
 -- individually so that there is no overlap.
 local af = Def.ActorFrame{
     InitCommand = function(self)
-	-- y-70 with -90 rotation is centered over the targets (y-43 is lined up with bottom of receptors for 10% mini)
-        self:xy(GetNotefieldX(player), layout.y-70)
+        self:xy(GetNotefieldX(player), layout.y)
         self:GetChild("Bar"):zoom(0)
-		--self:rotationz(-90)
     end,
     EarlyHitMessageCommand=function(self, params)
         if params.Player ~= player or hideEarlyJudgment then return end
@@ -212,7 +149,6 @@ local bar_af = Def.ActorFrame{
         InitCommand = function(self)
             self:zoomto(barWidth + 4, barHeight + 4)
                 :diffuse(color("#000000"))
-				:diffusealpha(0)
         end
     },
 }
@@ -230,7 +166,7 @@ for i = 1, #enabledTimingWindows do
     
     if mods.ShowFaPlusWindow and wi == 1 then
         -- Split the Fantastic window
-        windows.timing[#windows.timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite, eightMsOverride)
+        windows.timing[#windows.timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite)
         windows.color[#windows.color + 1] = SL.JudgmentColors["FA+"][1]
 
         windows.timing[#windows.timing + 1] = GetTimingWindow(2, "FA+")
@@ -241,52 +177,41 @@ for i = 1, #enabledTimingWindows do
     end 
 end
 
--- Disable the error bar rectangle for now
 -- create two quads for each window.
--- for i, window in ipairs(windows.timing) do
-    -- local x = window * wscale
-    -- local width = x - lastx
-    -- local judgmentColor = windows.color[i]
-	-- local windowNum = i
-	-- if mods.ShowFaPlusWindow then windowNum = windowNum - 1 end
+for i, window in ipairs(windows.timing) do
+    local x = window * wscale
+    local width = x - lastx
+    local judgmentColor = windows.color[i]
+	local windowNum = i
+	if mods.ShowFaPlusWindow then windowNum = windowNum - 1 end
 
-    -- bar_af[#bar_af+1] = Def.Quad{
-		-- Name = "Window" .. "eW" .. windowNum,
-        -- InitCommand = function(self)
-            -- self:x(-x):horizalign("left"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
-        -- end
-    -- }
-    -- bar_af[#bar_af+1] = Def.Quad{
-		-- Name = "Window" .. "lW" .. windowNum,
-        -- InitCommand = function(self)
-            -- self:x(x):horizalign("right"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
-        -- end
-    -- }
+    bar_af[#bar_af+1] = Def.Quad{
+		Name = "Window" .. "eW" .. windowNum,
+        InitCommand = function(self)
+            self:x(-x):horizalign("left"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
+        end
+    }
+    bar_af[#bar_af+1] = Def.Quad{
+		Name = "Window" .. "lW" .. windowNum,
+        InitCommand = function(self)
+            self:x(x):horizalign("right"):zoomto(width, barHeight):diffuse(judgmentColor):diffusealpha(0.3)
+        end
+    }
 
-    -- lastx = x
--- end
+    lastx = x
+end
 
 -- Ticks
 for i = 1, numTicks do
     af[#af+1] = Def.Quad{
         Name = "Tick" .. i,
         InitCommand = function(self)
-            self:zoomto(tickWidth, barHeight + 4 + 75)
+            self:zoomto(tickWidth, barHeight + 4)
                 :diffuse(color("#b20000"))
                 :diffusealpha(0)
                 :draworder(100)
         end
     }
 end
-
-af[#af+1] = Def.Quad{
-	Name = "CenterTick",
-	InitCommand = function(self)
-		self:zoomto(1, barHeight + 4 + 75)
-			:diffuse(color("#ffffff"))
-			:diffusealpha(0)
-			:draworder(100)
-	end
-}
 
 return af

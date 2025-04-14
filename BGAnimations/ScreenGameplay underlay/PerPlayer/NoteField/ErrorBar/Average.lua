@@ -13,11 +13,12 @@ local tickWidth = 2
 local tickDuration = 0.5
 local numTicks = mods.ErrorBarMultiTick and 5 or 1
 local currentTick = 1
+local eightMsOverride = mods.EightMs ~= "Off"
 
 local offsets = {} --track all offsets for averaging
-local numMillisecondsToAvg = 400
-local numArrowsToAvg = 1
-local offsetScale = 1 --Make the movements on the error bar more or less pronounced
+local numMillisecondsToAvg = tonumber(mods.HighlightAverageMs:gsub("ms",""), 10)
+local numArrowsToAvg = mods.HighlightAverage
+local offsetScale = tonumber(mods.HighlightZoom:gsub("x",""), 10) --Make the movements on the error bar more or less pronounced
 --barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
 
 local enabledTimingWindows = {}
@@ -86,14 +87,14 @@ local function DisplayTick(self, params)
 		end
 		local offset = totalOffset/numOffsets
 		
+		offset = offset*offsetScale
+		
 		if math.abs(offset) > maxTimingOffset then
 			-- Round score to the error cap
 			score = "W" .. enabledTimingWindows[#enabledTimingWindows]
 			if offset < 0 then offset = -maxTimingOffset
 			else offset = maxTimingOffset end
 		end
-		
-		offset = offset*offsetScale
 		
 		--Apply an additional correction if not using an average because it's jarring otherwise
 		if numOffsets == 1 then
@@ -108,7 +109,7 @@ local function DisplayTick(self, params)
 		
 		
 		-- Check if we need to adjust the color for the white fantastic window.
-		local is_W0 = IsW010Judgment(params, player) or (not mods.SmallerWhite and IsW0Judgment(params, player))
+		local is_W0 = IsW010Judgment(params, player, eightMsOverride) or (not mods.SmallerWhite and IsW0Judgment(params, player))
         if mods.ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" and
             is_W0 then
             score = "W0"
@@ -236,7 +237,7 @@ for i = 1, #enabledTimingWindows do
     
     if mods.ShowFaPlusWindow and wi == 1 then
         -- Split the Fantastic window
-        windows.timing[#windows.timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite)
+        windows.timing[#windows.timing + 1] = GetTimingWindow(1, "FA+", mods.SmallerWhite, eightMsOverride)
         windows.color[#windows.color + 1] = SL.JudgmentColors["FA+"][1]
 
         windows.timing[#windows.timing + 1] = GetTimingWindow(2, "FA+")
