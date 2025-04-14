@@ -55,7 +55,7 @@ if mods.ColumnFlashOnMiss then
 	local po = GAMESTATE:GetPlayerState(player):GetPlayerOptions('ModsLevel_Preferred')
 	-- Existing logic already accounts for turn mods but not flip or invert.
 	-- Manually try and account for it ourselves here.
-	local flip = po:Flip() > 0
+	local flip = po:Flip() > 0.5
 	local invert = po:Invert() > 0
 	
 	if flip and invert then return end
