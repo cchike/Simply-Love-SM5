@@ -34,7 +34,7 @@ for player in ivalues(players) do
 		}
 	end
 
-	t[#t+1] = LoadActor("ScreenGameplay underlay/PerPlayer/NoteField/default.lua", player)..{
+	t[#t+1] = LoadActor("ScreenGameplay underlay/PerPlayer/NoteField/default.lua", player, true)..{
 		ShowCommand=function(self) self:visible(false) end,
 		PlayingCommand=function(self) self:visible(true) end,
 	}

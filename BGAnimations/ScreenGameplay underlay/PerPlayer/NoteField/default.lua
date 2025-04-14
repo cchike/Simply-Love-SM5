@@ -1,4 +1,4 @@
-local player = ...
+local player, isPracticeMode = ...
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
 local opts = GAMESTATE:GetPlayerState(player):GetCurrentPlayerOptions()
@@ -38,8 +38,10 @@ af[#af+1] = LoadActor("ColumnFlashOnMiss.lua", player)
 af[#af+1] = LoadActor("ErrorBar/default.lua", player, layout.ErrorBar)
 af[#af+1] = LoadActor("MeasureCounter.lua", player, layout.MeasureCounter)
 af[#af+1] = LoadActor("SubtractiveScoring.lua", player, layout.SubtractiveScoring)
-af[#af+1] = LoadActor("ColumnCues.lua", player)
-af[#af+1] = LoadActor("DisplayMods.lua", player) 
+if not isPracticeMode then
+	af[#af+1] = LoadActor("ColumnCues.lua", player)
+	af[#af+1] = LoadActor("DisplayMods.lua", player) 
+end
 
 -- zmod specific elements
 if SL.Global.GameMode ~= "Casual" then
