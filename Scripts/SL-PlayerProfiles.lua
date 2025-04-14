@@ -86,10 +86,10 @@ local permitted_profile_settings = {
 	HighlightZoom        = "string",
 	HighlightAverage     = "number",
 	HighlightAverageMs   = "string",
-	--
 	ErrorBarUp           = "boolean",
 	ErrorBarMultiTick    = "boolean",
 	ErrorBarTrim         = "string",
+	--
 
 	ShowFaPlusWindow     = "boolean",
 	ShowExScore          = "boolean",

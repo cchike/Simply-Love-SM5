@@ -55,7 +55,7 @@ local PlayerDefaults = {
 				HighlightAverageMs = "0ms",
 				ErrorBarUp = false,
 				ErrorBarMultiTick = false,
-				ErrorBarCap = 5,
+				ErrorBarTrim = "Off",
 
 				HideEarlyDecentWayOffJudgments = false,
 				HideEarlyDecentWayOffFlash = false,

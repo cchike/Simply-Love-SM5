@@ -93,7 +93,17 @@ for i = 1, 3 do
 end
 
 local maxTimingOffset = GetTimingWindow(enabledTimingWindows[#enabledTimingWindows])
-local capTimingOffset = GetTimingWindow(mods.ErrorBarCap < NumJudgmentsAvailable() and mods.ErrorBarCap or NumJudgmentsAvailable())
+
+local maxError = 5
+if mods.ErrorBarTrim == "Fantastic" then
+	maxError = 1
+elseif mods.ErrorBarTrim == "Excellent" then
+	maxError = 2
+elseif mods.ErrorBarTrim == "Great" then
+	maxError = 3
+end
+
+local capTimingOffset = GetTimingWindow(maxError < NumJudgmentsAvailable() and maxError or NumJudgmentsAvailable())
 
 local font = mods.ComboFont
 if font == "Wendy" or font == "Wendy (Cursed)" then
