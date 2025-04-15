@@ -919,7 +919,7 @@ GetColumnMapping = function(player)
 		return nil
 	end
 
-	local flip = po:Flip() > 0
+	local flip = po:Flip() > 0.5
 	local invert = po:Invert() > 0
 	local left = po:Left()
 	local right = po:Right()
