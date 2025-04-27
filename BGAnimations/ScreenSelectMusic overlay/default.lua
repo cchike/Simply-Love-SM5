@@ -91,6 +91,9 @@ local af = Def.ActorFrame{
 	LoadActor("./EscapeFromEventMode.lua"),
 
 	LoadActor("./SongSearch/default.lua"),
+	
+	--Custom keyboard shortcuts
+	LoadActor("./Shortcuts.lua"),
 }
 
 return af
