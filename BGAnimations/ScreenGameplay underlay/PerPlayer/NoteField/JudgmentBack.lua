@@ -145,7 +145,7 @@ return Def.ActorFrame{
 			if sprite:GetNumStates() == 7 or sprite:GetNumStates() == 14 then
 				if ToEnumShortString(param.TapNoteScore) == "W1" then
 					if mods.ShowFaPlusWindow then
-						local is_W0 = IsW010Judgment(param, player, eightMsOverride) or (not mods.SmallerWhite and IsW0Judgment(param, player))
+						local is_W0 = IsW010Judgment(param, player, eightMsOverride) or ((not mods.SmallerWhite or mods.DisplayLock15ms) and IsW0Judgment(param, player))
 						-- If this W1 judgment fell outside of the FA+ window, show the white window
 						--
 						-- Treat Autoplay specially. The TNS might be out of the range, but
@@ -229,7 +229,7 @@ return Def.ActorFrame{
 		if sprite:GetNumStates() == 7 or sprite:GetNumStates() == 14 then
 			if tns == "W1" then
 				if mods.ShowFaPlusWindow then
-					local is_W0 = IsW010Judgment(param, player, eightMsOverride) or ((not mods.SmallerWhite or mods.SplitWhites) and IsW0Judgment(param, player))
+					local is_W0 = IsW010Judgment(param, player, eightMsOverride) or ((not mods.SmallerWhite or mods.SplitWhites or mods.DisplayLock15ms) and IsW0Judgment(param, player))
 					-- If this W1 judgment fell outside of the FA+ window, show the white window
 					--
 					-- Treat Autoplay specially. The TNS might be out of the range, but
@@ -328,7 +328,7 @@ return Def.ActorFrame{
 			sprite:zoom(1):decelerate(0.2):zoom(0.75):sleep(0.6):accelerate(0.2):zoom(0)
 		end
 		
-		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player, eightMsOverride) and not IsAutoplay(player) then
+		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player, eightMsOverride) and not IsAutoplay(player) and not mods.DisplayLock15ms then
 			local splitFrame = 1
 			if spriteGhost:GetNumStates() == 12 or spriteGhost:GetNumStates() == 14 then
 				splitFrame = splitFrame * 2

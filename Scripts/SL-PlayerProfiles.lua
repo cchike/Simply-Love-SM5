@@ -96,6 +96,7 @@ local permitted_profile_settings = {
 	ShowSuperExScore     = "boolean",
 	ShowFaPlusPane       = "boolean",
 	SmallerWhite         = "boolean",
+	DisplayLock15ms      = "boolean",
 	EightMs              = "string",
 
 	HideEarlyDecentWayOffJudgments = "boolean",

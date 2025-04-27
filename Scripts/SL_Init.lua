@@ -64,6 +64,7 @@ local PlayerDefaults = {
 				ShowFaPlusWindow = false,
 				ShowExScore = false,
 				ShowFaPlusPane = true,
+				DisplayLock15ms = false,
 				EightMs = "Off",
 				
 				RainbowMax = false,

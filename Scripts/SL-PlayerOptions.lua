@@ -443,10 +443,10 @@ local Overrides = {
 			end
 
 			if SL.Global.GameMode == "FA+" then
-				return { "ShowExScore", "SmallerWhite" }
+				return { "ShowExScore", "SmallerWhite", "DisplayLock15ms" }
 			end
 
-			return { "ShowFaPlusWindow", "ShowExScore", "ShowSuperExScore", "ShowFaPlusPane", "SmallerWhite" }
+			return { "ShowFaPlusWindow", "ShowExScore", "ShowSuperExScore", "ShowFaPlusPane", "SmallerWhite", "DisplayLock15ms" }
 		end,
 		LoadSelections = function(self, list, pn)
 			local mods = SL[ToEnumShortString(pn)].ActiveModifiers
@@ -458,6 +458,7 @@ local Overrides = {
 			if SL.Global.GameMode == "FA+" then
 				list[1] = mods.ShowExScore or false
 				list[2] = mods.SmallerWhite or false
+				list[3] = mods.DisplayLock15ms or false
 				return list
 			end		
 
@@ -466,6 +467,7 @@ local Overrides = {
 			list[3] = mods.ShowSuperExScore or false
 			list[4] = mods.ShowFaPlusPane or false
 			list[5] = mods.SmallerWhite or false
+			list[6] = mods.DisplayLock15ms or false
 			return list
 		end,
 		SaveSelections = function(self, list, pn)
@@ -477,6 +479,7 @@ local Overrides = {
 				mods.ShowExScore = ThemePrefs.Get("ScoringSystem") == "EX"
 				mods.ShowFaPlusPane = true
 				mods.SmallerWhite = false
+				mods.DisplayLock15ms = false
 				-- Default to FA+ pane in Tournament Mode
 				sl_pn.EvalPanePrimary = 2
 				return
@@ -489,6 +492,7 @@ local Overrides = {
 				-- the main score pane is already the FA+ pane
 				mods.ShowFaPlusPane = false
 				mods.SmallerWhite = list[2]
+				mods.DisplayLock15ms = list[3]
 				return
 			end
 
@@ -497,6 +501,7 @@ local Overrides = {
 			mods.ShowSuperExScore = list[3]
 			mods.ShowFaPlusPane = list[4]
 			mods.SmallerWhite = list[5]
+			mods.DisplayLock15ms = list[6]
 			-- Default to FA+ pane if either options are active.
 			sl_pn.EvalPanePrimary = ((list[1] or list[2]) and list[4]) and 2 or 1
 		end
@@ -814,7 +819,7 @@ local Overrides = {
 		SaveSelections = function(self, list, pn)
 			local mods, playeroptions = GetModsAndPlayerOptions(pn)
 
-			for i=1,#self.Choices do
+			for i=1,#self.Values do
 				if list[i] then
 					mods.EightMs = self.Values[i]
 				end

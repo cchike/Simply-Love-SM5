@@ -132,7 +132,7 @@ for index, window in ipairs(TNS.Types) do
 			if ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" then
 				local is_W0 = IsW0Judgment(params, player)
 				local is_W0_10 = IsW010Judgment(params, player, eightMsOverride)
-				if SL[pn].ActiveModifiers.SmallerWhite then
+				if SL[pn].ActiveModifiers.SmallerWhite and not SL[pn].ActiveModifiers.DisplayLock15ms then
 					if is_W0_10 and window == "W0" then
 						TNS.Judgments[window] = TNS.Judgments[window] + 1
 						incremented = true
@@ -201,7 +201,7 @@ for index, window in ipairs(TNS.Types) do
 				end,
 			}
 			
-			if index == 1 and SL[pn].ActiveModifiers.SmallerWhite and ShowFaPlusWindow then
+			if index == 1 and SL[pn].ActiveModifiers.SmallerWhite and ShowFaPlusWindow and not SL[pn].ActiveModifiers.DisplayLock15ms then
 				af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 					Text=eightMsOverride and "(8ms)" or "(10ms)",
 					InitCommand=function(self)
