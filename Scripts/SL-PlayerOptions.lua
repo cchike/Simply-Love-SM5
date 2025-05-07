@@ -638,9 +638,9 @@ local Overrides = {
 		Values = function()
 			local vals = {}
 			if IsUsingWideScreen() then
-				vals = { "JudgmentTilt", "ColumnCues", "ColumnCountdown" }
+				vals = { "JudgmentTilt", "ColumnCues", "ColumnCountdown", "CrossoverCues" }
 			else
-				vals = { "JudgmentTilt", "ColumnCues", "ColumnCountdown", "ShowHeldMiss" }
+				vals = { "JudgmentTilt", "ColumnCues", "ColumnCountdown", "CrossoverCues", "ShowHeldMiss" }
 			end
 			return vals
 		end
@@ -738,6 +738,20 @@ local Overrides = {
 			
 			return stringify( range(first, last, step), "%gms")
 		end
+	},
+	-------------------------------------------------------------------------
+	CrossoverCueDuration = {
+		Choices = function()
+			local first = 500
+			local last = 1500
+			local step = 250
+			
+			return stringify( range(first, last, step), "%gms")
+		end
+	},
+	-------------------------------------------------------------------------
+	CrossoverCueQuantization = {
+		Choices = {4,8,12,16,24,32,48,64}
 	},
 	-------------------------------------------------------------------------
 	ErrorBarTrim = {

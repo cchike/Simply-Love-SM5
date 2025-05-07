@@ -40,6 +40,7 @@ af[#af+1] = LoadActor("MeasureCounter.lua", player, layout.MeasureCounter)
 af[#af+1] = LoadActor("SubtractiveScoring.lua", player, layout.SubtractiveScoring)
 if not isPracticeMode then
 	af[#af+1] = LoadActor("ColumnCues.lua", player)
+	af[#af+1] = LoadActor("CrossoverCues.lua", player)
 	af[#af+1] = LoadActor("DisplayMods.lua", player) 
 end
 

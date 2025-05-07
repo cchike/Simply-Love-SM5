@@ -42,6 +42,9 @@ local PlayerDefaults = {
 				TiltMultiplier = 1,
 				ColumnCues = false,
 				ColumnCountdown = false,
+				CrossoverCues = false,
+				CrossoverCueDuration = "1000ms",
+				CrossoverCueQuantization = 16,
 				ShowHeldMiss = false,
 				DisplayScorebox = true,
 

@@ -421,6 +421,8 @@ local MaybeCopyFromOppositePlayer = function(pn, filename, stepsType, difficulty
 		SL[pn].Streams.PeakNPS = SL[opposite_player].Streams.PeakNPS
 		SL[pn].Streams.NPSperMeasure = SL[opposite_player].Streams.NPSperMeasure
 		SL[pn].Streams.ColumnCues = SL[opposite_player].Streams.ColumnCues
+		SL[pn].Streams.NoteAnnotations = SL[opposite_player].Streams.NoteAnnotations
+		SL[pn].Streams.TimingData = SL[opposite_player].Streams.TimingData
 		SL[pn].Streams.Hash = SL[opposite_player].Streams.Hash
 
 		SL[pn].Streams.Crossovers = SL[opposite_player].Streams.Crossovers
@@ -493,7 +495,15 @@ ParseChartInfo = function(steps, pn)
 				SL[pn].Streams.PeakNPS = PeakNPS
 				SL[pn].Streams.NPSperMeasure = NPSperMeasure
 				SL[pn].Streams.ColumnCues = ColumnCues
+				SL[pn].Streams.NoteAnnotations = nil
+				SL[pn].Streams.TimingData = steps:GetTimingData()
 				SL[pn].Streams.Hash = Hash
+				local success, result = pcall(function() return steps:GetNoteAnnotations() end)
+				if success then
+					SL[pn].Streams.NoteAnnotations = result
+				end
+
+
 
 				-- Let's just do this here for now since a lot of the existing infra
 				-- references these values directly. We can refactor later.

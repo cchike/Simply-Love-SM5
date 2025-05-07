@@ -73,6 +73,9 @@ local permitted_profile_settings = {
 	TiltMultiplier       = "number",
 	ColumnCues           = "boolean",
 	ColumnCountdown      = "boolean",
+	CrossoverCues        = "boolean",
+	CrossoverCueDuration = "string",
+	CrossoverCueQuantization = "number",
 	TrackFoot            = "boolean",
 	ScaleGraph           = "boolean",
 
