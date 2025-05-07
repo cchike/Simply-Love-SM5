@@ -112,6 +112,20 @@ bmt.InitCommand=function(self)
 end
 
 bmt.JudgmentMessageCommand=function(self, params)
+	if player == params.Player and mods.ShowExScore then
+		-- used to determine if a player has failed yet
+		local topscreen = SCREENMAN:GetTopScreen()
+
+		-- if the player adjusts the sync of the stepchart during gameplay, they will eventually
+		-- reach ScreenPrompt, where they'll be prompted to accept or reject the sync changes.
+		-- Although the screen changes, this Lua sticks around, and the TopScreen will no longer
+		-- have a GetLifeMeter() method.
+		if topscreen.GetLifeMeter == nil then return end
+		if topscreen:GetLifeMeter(player):IsFailing() then
+			self:diffusealpha(0.25)
+		end
+	end
+	
 	if player == params.Player and not mods.ShowExScore and (mods.TargetScore ~= "Ghost Data" or (mods.TargetScore == "Ghost Data" and not ghostdata)) then
 		tns = ToEnumShortString(params.TapNoteScore)
 		hns = params.HoldNoteScore and ToEnumShortString(params.HoldNoteScore)
