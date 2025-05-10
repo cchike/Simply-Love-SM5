@@ -10,6 +10,7 @@ local GraphHeight = args.GraphHeight
 local ArrowColors = { Color.Red, Color.Blue, Color.Green, Color.Yellow }
 
 local pn = ToEnumShortString(player)
+local mods = SL[pn].ActiveModifiers
 
 -- sequential_offsets gathered in ./BGAnimations/ScreenGameplay overlay/JudgmentOffsetTracking.lua
 local sequential_offsets = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].sequential_offsets
@@ -29,18 +30,16 @@ local LastSecond = GAMESTATE:GetCurrentSong():GetLastSecond()
 local Offset, CurrentSecond, TimingWindow, x, y, c, r, g, b
 
 -- ---------------------------------------------
--- if players have disabled W4 or W4+W5, there will be a smaller pool
--- of judgments that could have possibly been earned
-local worst_window = GetTimingWindow(SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].worst_window)
--- local windows = SL[pn].ActiveModifiers.TimingWindows
--- for i=NumJudgmentsAvailable(),1,-1 do
--- 	if windows[i] then
---		worst_window = GetTimingWindow(i)
---		break
---	end
--- end
+-- scale worst_window to the worst judgment hit in the song
+-- start at Excellent window as the worst window since most quads are
+-- hard to make sense of visually
+-- EDIT: Removed Excellent start point
+local worst_window = GetTimingWindow(GetWorstJudgment(sequential_offsets))
 
--- ---------------------------------------------
+-- cap worst_window to Excellent if selected by the player
+if mods.ScaleGraph then
+	worst_window = math.min(worst_window, SL.Global.GameMode == "FA+" and GetTimingWindow(3) or GetTimingWindow(2))
+end
 
 local colors = {}
 for w=NumJudgmentsAvailable(),1,-1 do
@@ -92,7 +91,7 @@ for t in ivalues(sequential_offsets) do
 	g = c[2]
 	b = c[3]
 
-	if Offset ~= "Miss" then
+	if Offset ~= "Miss" and (math.abs(Offset) <= worst_window or not mods.ScaleGraph) then
 		-- DetermineTimingWindow() is defined in ./Scripts/SL-Helpers.lua
 		TimingWindow = DetermineTimingWindow(Offset)
 		y = scale(Offset, worst_window, -worst_window, 0, GraphHeight)
@@ -134,18 +133,25 @@ for t in ivalues(sequential_offsets) do
 	else
 		-- else, a miss should be a quadrilateral that is the height of half of the graph and red
 		-- if the miss is held, fill the upper half. otherwise, fill the lower half
+		-- if the graph is capped to Greats, use these too
 		local h1 = HeldMiss and GraphHeight/2 or 0
 		local h2 = HeldMiss and GraphHeight or GraphHeight/2
+		if Offset ~= "Miss" then
+			h1 = Offset>0 and 0 or GraphHeight/2
+			h2 = Offset>0 and GraphHeight/2 or GraphHeight
+		end
 		if death_second ~= nil and CurrentSecond / MusicRate > death_second then
-			table.insert( verts, {{x, h1, h1}, {r,g,b,0.08}} )
-			table.insert( verts, {{x+1, h1, h1}, {r,g,b,0.08}} )
-			table.insert( verts, {{x+1, h2, h2}, {r,g,b,0.08}} )
-			table.insert( verts, {{x, h2, h2}, {r,g,b,0.08}} )
+			col = {r,g,b,0.08}
+			table.insert( verts, {{x, h1, h1}, col} )
+			table.insert( verts, {{x+1, h1, h1}, col} )
+			table.insert( verts, {{x+1, h2, h2}, col} )
+			table.insert( verts, {{x, h2, h2}, col} )
 		else
-			table.insert( verts, {{x, h1, h1}, {r,g,b,0.333}} )
-			table.insert( verts, {{x+1, h1, h1}, {r,g,b,0.333}} )
-			table.insert( verts, {{x+1, h2, h2}, {r,g,b,0.333}} )
-			table.insert( verts, {{x, h2, h2}, {r,g,b,0.333}} )
+			col = {r,g,b,0.3}
+			table.insert( verts, {{x, h1, h1}, col} )
+			table.insert( verts, {{x+1, h1, h1}, col} )
+			table.insert( verts, {{x+1, h2, h2}, col} )
+			table.insert( verts, {{x, h2, h2}, col} )
 		end
 	end
 end
