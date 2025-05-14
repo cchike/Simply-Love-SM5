@@ -53,20 +53,23 @@ local Update = function(self, delta)
 			updatedFirstTime = true
 		end
 		if startTime <= curTime then
-			-- Get the current music rate.
-			-- Note that Lua files might change the rate mode so this might not be accurate.
-			-- It's hard to handle that case since we don't exactly know when a file will apply a rate mod.
-			local rate = SL.Global.ActiveModifiers.MusicRate
-			local scaledDuration = duration / rate
-			-- Make sure there's still something to display after any potential scaling.
-			if scaledDuration > 2 * fadeTime then
-				for col_mine in ivalues(columnCue.columns) do
-					local col = columnMapping[col_mine.colNum]
-					local isMine = col_mine.isMine
-					self:GetChild("Column"..col):GetChild("ColumnFlash"):playcommand("Flash", {
-						duration=scaledDuration,
-						isMine=isMine
-					})
+			--For Practice Mode: Ignore any cues that begin long before the start time, since legitimate cues will only fire when curTime and startTime are nearly equal
+			if curTime - startTime < .01 then
+				-- Get the current music rate.
+				-- Note that Lua files might change the rate mode so this might not be accurate.
+				-- It's hard to handle that case since we don't exactly know when a file will apply a rate mod.
+				local rate = SL.Global.ActiveModifiers.MusicRate
+				local scaledDuration = duration / rate	
+				-- Make sure there's still something to display after any potential scaling.
+				if scaledDuration > 2 * fadeTime then
+					for col_mine in ivalues(columnCue.columns) do
+						local col = columnMapping[col_mine.colNum]
+						local isMine = col_mine.isMine
+						self:GetChild("Column"..col):GetChild("ColumnFlash"):playcommand("Flash", {
+							duration=scaledDuration,
+							isMine=isMine
+						})
+					end
 				end
 			end
 			curIndex = curIndex + 1
