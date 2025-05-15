@@ -34,6 +34,7 @@ else
 end
 
 local isCrossover = function(beat)
+	if beat == nil then return false end
 	for tech in ivalues(beat.tech) do
 		if ToEnumShortString(tech) == "Crossovers" then
 			return true
@@ -44,8 +45,8 @@ end
 
 local getArrowCol = function(beat, isCrossover)
 	for col, foot in pairs(beat.footPlacement) do
-	--For crossover steps, determines Left or Right
-	--For non-crossover steps, determines Down or Up
+	-- For crossover steps, determines Left or Right
+	-- For non-crossover steps, determines Down or Up
 		if isCrossover and (col == 1 or col == 4) then
 			return col
 		elseif not isCrossover and (col == 2 or col == 3) then
@@ -67,30 +68,36 @@ local buildCrossoverCues = function(crossoverCues)
 		local currentBeat = parsedTech[i]
 		local prevBeat = parsedTech[i-1]
 		local nextBeat = i < #parsedTech and parsedTech[i+1] or nil
-		--if both currentBeat and prevBeat are crossovers, then currentBeat is a scooby which would've been handled when prevBeat was processed, so we can skip it
+		-- if both currentBeat and prevBeat are crossovers, then currentBeat is a scooby which would've been handled when prevBeat was processed, so we can skip it
 		if isCrossover(currentBeat) and not isCrossover(prevBeat) then
-			--if nextBeat is a crossover, then we process the current crossover as a scooby
-			local isScooby = nextBeat ~= nil and isCrossover(nextBeat) or false
+			-- if nextBeat is a crossover, then we process the current crossover as a scooby
+			local isScooby = isCrossover(nextBeat)
 			local nextNextBeat = (isScooby and i < #parsedTech+1) and parsedTech[i+2] or nil
 			local firstCondition = currentBeat.beat - prevBeat.beat <= spacingThreshold
 			local secondCondition = nextBeat ~= nil and nextBeat.beat - currentBeat.beat <= spacingThreshold
 			local thirdCondition = nextNextBeat ~= nil and nextNextBeat.beat - nextBeat.beat <= spacingThreshold
-			--if the minimum quantization threshold is satisfied
+			-- if the minimum quantization threshold is satisfied
 			if firstCondition or secondCondition or thirdCondition then
 				local crossoverCue = {}
 				local prevArrowCol = getArrowCol(prevBeat, false)
 				local currentArrowCol = getArrowCol(currentBeat, true)
-				--Throw away certain edge cases which don't make sense
+				-- Throw away certain edge cases which don't make sense
 				if prevArrowCol ~= nil and currentArrowCol ~= nil then
 					local prevArrowTimePosition = timingData:GetElapsedTimeFromBeat(prevBeat.beat)
 					crossoverCue.columns = {{colNum=currentArrowCol,isScooby=false},{colNum=prevArrowCol,isScooby=false}}
 					crossoverCue.startTime = prevArrowTimePosition - duration
 					crossoverCue.duration = duration + fadeTime
+					-- If there's a large gap in time between the crossover arrow and the arrow before it,
+					-- then we want the crossover cue to last until the actual crossover happens, not the arrow before it
+					if not firstCondition then
+						local curArrowTimePosition = timingData:GetElapsedTimeFromBeat(currentBeat.beat)
+						crossoverCue.duration = crossoverCue.duration + (curArrowTimePosition - prevArrowTimePosition)
+					end					
 					if isScooby then
 						local nextArrowCol = getArrowCol(nextBeat, true)
 						crossoverCue.columns[#crossoverCue.columns+1] = {colNum=nextArrowCol,isScooby=true}
 					end
-					--Ensure consecutive crossover cues don't overlap
+					-- Ensure consecutive crossover cues don't overlap
 					local prevCue = #crossoverCues > 0 and crossoverCues[#crossoverCues] or nil
 					if prevCue ~= nil and crossoverCue.startTime < prevCue.startTime + prevCue.duration then
 						local durationDifference = prevCue.startTime + prevCue.duration - crossoverCue.startTime
