@@ -41,7 +41,7 @@ local function DisplayText(self, params)
 				scale2 = (noteOffset - W1)/(W2 - W1)
 			end
 			
-			local miniScale = scale(mods.Mini:gsub("%%","")/100, 0, 2, 0, 1)
+			local miniScale = scale(mods.Mini:gsub("%%","")/100, 0, 2, -0.1, 0.99)
 			local zoom = 0.15 + (scale1*0.2) + (scale2*0.1)
 			
 			self:diffusealpha(1)
