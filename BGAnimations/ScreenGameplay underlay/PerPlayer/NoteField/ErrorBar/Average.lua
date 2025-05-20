@@ -7,9 +7,11 @@ local playerState = GAMESTATE:GetPlayerState(player)
 
 local hideEarlyJudgment = mods.HideEarlyDecentWayOffJudgments and true or false
 
-local barWidth = 325
+local miniScale = 1 - scale(mods.Mini:gsub("%%","")/100, 0, 2, -0.1, 0.99)
+
+local barWidth = 325*miniScale
 local barHeight = 7
-local tickWidth = 2
+local tickWidth = 2*miniScale
 local tickDuration = 0.5
 local numTicks = mods.ErrorBarMultiTick and 5 or 1
 local currentTick = 1
@@ -278,7 +280,7 @@ for i = 1, numTicks do
     af[#af+1] = Def.Quad{
         Name = "Tick" .. i,
         InitCommand = function(self)
-            self:zoomto(tickWidth, barHeight + 4 + 75)
+            self:zoomto(tickWidth, (barHeight + 4 + 75)*miniScale)
                 :diffuse(color("#b20000"))
                 :diffusealpha(0)
                 :draworder(100)
@@ -289,7 +291,7 @@ end
 af[#af+1] = Def.Quad{
 	Name = "CenterTick",
 	InitCommand = function(self)
-		self:zoomto(1, barHeight + 4 + 75)
+		self:zoomto(1, (barHeight + 4 + 75)*miniScale)
 			:diffuse(color("#ffffff"))
 			:diffusealpha(0)
 			:draworder(100)

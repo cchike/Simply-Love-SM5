@@ -41,9 +41,12 @@ local function DisplayText(self, params)
 				scale2 = (noteOffset - W1)/(W2 - W1)
 			end
 			
+			local miniScale = scale(mods.Mini:gsub("%%","")/100, 0, 2, 0, 1)
+			local zoom = 0.15 + (scale1*0.2) + (scale2*0.1)
+			
 			self:diffusealpha(1)
-				:x((params.Early and -1 or 1) * 60)
-				:zoom(0.15 + (scale1*0.2) + (scale2*0.1))
+				:x((params.Early and -1 or 1) * 60 * (1 - miniScale))
+				:zoom(zoom*(1 - miniScale))
                 :settext(params.Early and "FAST" or "SLOW")
                 :diffuse(params.Early and color("#0051db") or color("#ff1605"))
                 :sleep(0.5)
@@ -58,7 +61,8 @@ end
 
 local af = Def.ActorFrame{
     OnCommand = function(self)
-        self:xy(GetNotefieldX(player), layout.y-10)
+	local miniScale = scale(mods.Mini:gsub("%%","")/100, 0, 1.5, 8, 50)
+        self:xy(GetNotefieldX(player), layout.y-miniScale)
     end,
 
     LoadFont("Wendy/_wendy small")..{
