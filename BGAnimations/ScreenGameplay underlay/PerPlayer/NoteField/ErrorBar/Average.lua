@@ -1,5 +1,49 @@
 -- Modified Error Bar that displays the average error of the last X number of steps (or all steps hit within the last X ms)
 
+----- Helper methods to make 64-note offset queue -----
+Queue = {}
+Queue.__index = Queue
+
+function Queue.new()
+    return setmetatable({ first = 0, last = -1, data = {} }, Queue)
+end
+
+function Queue:pushRight(value)
+    self.last = self.last + 1
+    self.data[self.last] = value
+end
+
+function Queue:popLeft()
+    if self:isEmpty() then return nil end
+    local value = self.data[self.first]
+    self.data[self.first] = nil  -- allow GC
+    self.first = self.first + 1
+    return value
+end
+
+function Queue:peekLeft()
+    if self:isEmpty() then return nil end
+    return self.data[self.first]
+end
+
+function Queue:isEmpty()
+    return self.first > self.last
+end
+
+function Queue:length()
+    return self.last - self.first + 1
+end
+
+-- Optional: convert queue to array
+function Queue:toArray()
+    local arr = {}
+    for i = self.first, self.last do
+        table.insert(arr, self.data[i])
+    end
+    return arr
+end
+----------
+
 local player, layout = ...
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
@@ -22,6 +66,10 @@ local numMillisecondsToAvg = tonumber(mods.HighlightAverageMs:gsub("ms",""), 10)
 local numArrowsToAvg = mods.HighlightAverage
 local offsetScale = tonumber(mods.HighlightZoom:gsub("x",""), 10) --Make the movements on the error bar more or less pronounced
 --barWidth = mods.ErrorBarMultiTick and barWidth or barWidth*mods.HighlightZoom
+
+-- For tracking the long term mean to display as tick
+local offsetsLongTermTotal = 0
+local offsetsLongTerm = Queue.new()
 
 local enabledTimingWindows = {}
 
@@ -49,12 +97,33 @@ local function DisplayTick(self, params)
     if score == "W1" or score == "W2" or score == "W3" or score == "W4" or score == "W5" then
         local tick = self:GetChild("Tick" .. currentTick)
 		local centerTick = self:GetChild("CenterTick")
+		local longAvgTick = self:GetChild("LongAvgTick")
         local bar = self:GetChild("Bar")
 		local window
 
         currentTick = currentTick % numTicks + 1
 		
 		local currentTimeMilliseconds = round(playerState:GetSongPosition():GetMusicSeconds(),2) * 1000
+		
+		--------- For long-term mean calculation 
+		-- Throw out any steps that were likely misfires or fat-foots
+		if math.abs(params.TapNoteOffset) <= 0.060 then
+			offsetsLongTermTotal = offsetsLongTermTotal + params.TapNoteOffset
+			offsetsLongTerm:pushRight({currentTimeMilliseconds, params.TapNoteOffset})
+		end
+		-- Remove old offsets not within the numMilliseconds*16 or numArrowsToAvg*16 threshold (serves a similar purpose to 64-note mean)
+		while not offsetsLongTerm:isEmpty() do
+			local front = offsetsLongTerm:peekLeft()
+			if numMillisecondsToAvg == 0 and offsetsLongTerm:length() <= numArrowsToAvg*16 then
+				break
+			elseif currentTimeMilliseconds - front[1] <= numMillisecondsToAvg*16 then
+				break
+			else
+				offsetsLongTermTotal = offsetsLongTermTotal - offsetsLongTerm:popLeft()[2]
+			end
+		end
+		local offsetsLongTermMean = offsetsLongTermTotal/offsetsLongTerm:length()
+		---------
 		
 		offsets[#offsets+1] = {currentTimeMilliseconds, params.TapNoteOffset}
 		numOffsets = 0
@@ -90,12 +159,18 @@ local function DisplayTick(self, params)
 		local offset = totalOffset/numOffsets
 		
 		offset = offset*offsetScale
+		offsetsLongTermMean = offsetsLongTermMean*offsetScale
 		
 		if math.abs(offset) > maxTimingOffset then
 			-- Round score to the error cap
 			score = "W" .. enabledTimingWindows[#enabledTimingWindows]
 			if offset < 0 then offset = -maxTimingOffset
 			else offset = maxTimingOffset end
+		end
+		
+		if math.abs(offsetsLongTermMean) > maxTimingOffset then
+			if offsetsLongTermMean < 0 then offsetsLongTermMean = -maxTimingOffset
+			else offsetsLongTermMean = maxTimingOffset end
 		end
 		
 		--Apply an additional correction if not using an average because it's jarring otherwise
@@ -124,6 +199,7 @@ local function DisplayTick(self, params)
 
         tick:finishtweening()
 		centerTick:finishtweening()
+		longAvgTick:finishtweening()
         bar:finishtweening()
         bar:zoom(1)
 		
@@ -141,6 +217,14 @@ local function DisplayTick(self, params)
 		if mods.CenterTick then
 			centerTick:diffusealpha(0.3)
                   :sleep(tickDuration):diffusealpha(0)
+		end
+		
+		-- Don't show the long-term mean until there are at least 8 notes hit
+		if mods.LongAvgTick and offsetsLongTerm:length() >= 8 then
+			-- Add a 2x multiplier to make it stand out more
+			longAvgTick:diffusealpha(1)
+					:x(offsetsLongTermMean * wscale * 2)
+					:sleep(tickDuration):diffusealpha(0)
 		end
 		
 		-- Disable the error bar rectangle for now
@@ -276,6 +360,26 @@ end
 -- end
 
 -- Ticks
+af[#af+1] = Def.Quad{
+	Name = "LongAvgTick",
+	InitCommand = function(self)
+		self:zoomto(1, (barHeight + 4 + 65)*miniScale)
+			:diffuse(color("#0000ff"))
+			:diffusealpha(0)
+			:draworder(100)
+	end
+}
+
+af[#af+1] = Def.Quad{
+	Name = "CenterTick",
+	InitCommand = function(self)
+		self:zoomto(1, (barHeight + 4 + 75)*miniScale)
+			:diffuse(color("#ffffff"))
+			:diffusealpha(0)
+			:draworder(100)
+	end
+}
+
 for i = 1, numTicks do
     af[#af+1] = Def.Quad{
         Name = "Tick" .. i,
@@ -288,14 +392,5 @@ for i = 1, numTicks do
     }
 end
 
-af[#af+1] = Def.Quad{
-	Name = "CenterTick",
-	InitCommand = function(self)
-		self:zoomto(1, (barHeight + 4 + 75)*miniScale)
-			:diffuse(color("#ffffff"))
-			:diffusealpha(0)
-			:draworder(100)
-	end
-}
 
 return af

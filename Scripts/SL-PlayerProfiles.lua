@@ -136,6 +136,7 @@ local permitted_profile_settings = {
 	SplitWhites          = "boolean",
 	BreakUI              = "boolean",
 	CenterTick           = "boolean",
+	LongAvgTick          = "boolean",
 
 	GrowCombo			 = "boolean",
 	SpinCombo			 = "boolean",
