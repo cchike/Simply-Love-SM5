@@ -219,12 +219,14 @@ local function DisplayTick(self, params)
                   :sleep(tickDuration):diffusealpha(0)
 		end
 		
-		-- Don't show the long-term mean until there are at least 8 notes hit
-		if mods.LongAvgTick and offsetsLongTerm:length() >= 8 then
+		-- Don't show the long-term mean until there are at least 8 notes hit and the distance from 0ms is great enough (using 4ms for now)
+		if mods.LongAvgTick and offsetsLongTerm:length() >= 8 and math.abs(offsetsLongTermMean) >= 0.004 then
 			-- Add a 2x multiplier to make it stand out more
 			longAvgTick:diffusealpha(1)
 					:x(offsetsLongTermMean * wscale * 2)
 					:sleep(tickDuration):diffusealpha(0)
+		else
+			longAvgTick:diffusealpha(0)
 		end
 		
 		-- Disable the error bar rectangle for now
