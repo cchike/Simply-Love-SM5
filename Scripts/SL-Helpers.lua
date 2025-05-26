@@ -1088,7 +1088,14 @@ GetPlayerOptionsString = function(player, modsLevel)
 						optionslist = optionslist..", ".."ErrorBar"..SL[pn].ActiveModifiers.HighlightZoom.."(Avg:"..SL[pn].ActiveModifiers.HighlightAverageMs..")"
 					end
 				end
-
+				local spacing = SL[pn].ActiveModifiers.Spacing
+				 -- Remove the "%" and convert to number
+				local number = tonumber(spacing:match("[-%d%.]+"))
+				-- Flip the sign
+				local negativeSpacing = -number
+				-- Remove Spacing from options list
+				optionslist = optionslist:gsub(tostring(negativeSpacing) .. "%% Flip,","")
+				optionslist = optionslist:gsub(tostring(negativeSpacing) .. "%% Flip","")
 			end
 		end
 	end

@@ -302,6 +302,12 @@ local Overrides = {
 
 			return stringify( range(first, last, step), "%g%%")
 		end,
+		LoadSelections = function(self, list, pn)
+			local mods, playeroptions = GetModsAndPlayerOptions(pn)
+			local i = FindInTable(mods.Spacing, self.Choices) or 101
+			list[i] = true
+			return list
+		end,
 		SaveSelections = function(self, list, pn)
 			local mods, playeroptions = GetModsAndPlayerOptions(pn)
 
@@ -311,8 +317,6 @@ local Overrides = {
 				end
 			end
 
-			-- to make the arrows smaller, pass Mini() a value between 0 and 1
-			-- (to make the arrows bigger, pass Mini() a value larger than 1)
 			playeroptions:Flip( -mods.Spacing:gsub("%%","")/100 )
 		end
 	},
