@@ -142,7 +142,16 @@ if mods.ColumnFlashOnMiss then
 			self:zoomx( zoom_factor )
 		end,
 		EarlyHitMessageCommand=function(self, params)
-			if not mods.HideEarlyDecentWayOffFlash then
+			local tns = ToEnumShortString(param.TapNoteScore)
+			if tns == nil then return end
+			local isDecent = false
+			if SL.Global.GameMode == "FA+" then
+				isDecent = tns == "W5"
+			else
+				isDecent = tns == "W4"
+			end
+			
+			if not mods.HideEarlyDecentWayOffFlash  and not (mods.HideEarlyDecentFlash and isDecent) then
 				FlashColumn(self, params)
 			end
 		end,

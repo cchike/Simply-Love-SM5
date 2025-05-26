@@ -63,8 +63,17 @@ if file_to_load == "None" then
 		InitCommand=function(self) self:visible(false) end,
 		EarlyHitMessageCommand=function(self, param)
 			if param.Player ~= player then return end
+			
+			local tns = ToEnumShortString(param.TapNoteScore)
+			if tns == nil then return end
+			local isDecent = false
+			if SL.Global.GameMode == "FA+" then
+				isDecent = tns == "W5"
+			else
+				isDecent = tns == "W4"
+			end
 	
-			if not mods.HideEarlyDecentWayOffFlash then
+			if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
 				SCREENMAN:GetTopScreen()
 								 :GetChild("Player"..pn)
 								 :GetChild("NoteField")
@@ -129,11 +138,20 @@ return Def.ActorFrame{
 	end,
 	EarlyHitMessageCommand=function(self, param)
 		if param.Player ~= player then return end
+		
+		local tns = ToEnumShortString(param.TapNoteScore)
+		if tns == nil then return end
+		local isDecent = false
+		if SL.Global.GameMode == "FA+" then
+			isDecent = tns == "W5"
+		else
+			isDecent = tns == "W4"
+		end
 
 		local frame = TNSFrames[ param.TapNoteScore ]
 		if not frame then return end
 
-		if not mods.HideEarlyDecentWayOffFlash then
+		if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
 			SCREENMAN:GetTopScreen()
 							 :GetChild("Player"..pn)
 							 :GetChild("NoteField")

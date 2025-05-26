@@ -104,6 +104,7 @@ local permitted_profile_settings = {
 
 	HideEarlyDecentWayOffJudgments = "boolean",
 	HideEarlyDecentWayOffFlash     = "boolean",
+	HideEarlyDecentFlash           = "boolean",
 	
 	PackBanner           = "boolean",
 	StepInfo             = "boolean",

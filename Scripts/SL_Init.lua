@@ -63,6 +63,7 @@ local PlayerDefaults = {
 
 				HideEarlyDecentWayOffJudgments = false,
 				HideEarlyDecentWayOffFlash = false,
+				HideEarlyDecentFlash = false,
 
 				ShowFaPlusWindow = false,
 				ShowExScore = false,
