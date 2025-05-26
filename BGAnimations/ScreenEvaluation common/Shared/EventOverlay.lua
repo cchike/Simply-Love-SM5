@@ -581,6 +581,10 @@ local GetItlPaneFunctions = function(eventAf, itlData, player)
 			end
 		end
 	end
+	
+	if scoreDelta > 0 then
+		SOUND:PlayOnce(THEME:GetPathS("", "Results Sounds/NewRecord.ogg"))
+	end
 
 	table.insert(paneTexts, string.format(
 		"EX Score: %.2f%% (%+.2f%%)\n"..

@@ -3,7 +3,7 @@
 
 -- used by SSMCasual to play preview music of the current song
 -- this is invoked each time the custom MusicWheel changes focus
-play_sample_music = function()
+play_sample_music = function(noLoop)
 	if GAMESTATE:IsCourseMode() then return end
 	local song = GAMESTATE:GetCurrentSong()
 
@@ -14,7 +14,7 @@ play_sample_music = function()
 
 		if songpath and sample_start and sample_len then
 			SOUND:DimMusic(PREFSMAN:GetPreference("SoundVolume"), math.huge)
-			SOUND:PlayMusicPart(songpath, sample_start,sample_len, 0.5, 1.5, true, true)
+			SOUND:PlayMusicPart(songpath, sample_start,sample_len, 0.5, 1.5, not noLoop, true)
 		else
 			stop_music()
 		end

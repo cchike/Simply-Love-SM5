@@ -12,6 +12,8 @@ end
 
 if ThemePrefs.Get("VisualStyle") ~= "SRPG8" then
 	local img = failed and "failed text.png" or "cleared text.png"
+	
+	if not failed then play_sample_music(true) end
 
 	return Def.ActorFrame{
 		Def.Quad{
