@@ -47,8 +47,17 @@ if file_to_load == "None" then
 	  end,
 		EarlyHitMessageCommand=function(self, param)
 			if param.Player ~= player then return end
+			
+			local tns = ToEnumShortString(param.TapNoteScore)
+			if tns == nil then return end
+			local isDecent = false
+			if SL.Global.GameMode == "FA+" then
+				isDecent = tns == "W5"
+			else
+				isDecent = tns == "W4"
+			end
 	
-			if not mods.HideEarlyDecentWayOffFlash then
+			if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
 				GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(param.Column + 1, param.TapNoteScore, --[[bright]] false)
 			end
 		end
@@ -104,11 +113,20 @@ return Def.ActorFrame{
 	end,
 	EarlyHitMessageCommand=function(self, param)
 		if param.Player ~= player then return end
+		
+		local tns = ToEnumShortString(param.TapNoteScore)
+		if tns == nil then return end
+		local isDecent = false
+		if SL.Global.GameMode == "FA+" then
+			isDecent = tns == "W5"
+		else
+			isDecent = tns == "W4"
+		end
 
 		local frame = TNSFrames[ param.TapNoteScore ]
 		if not frame then return end
 
-		if not mods.HideEarlyDecentWayOffFlash then
+		if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
 			GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(param.Column + 1, param.TapNoteScore, --[[bright]] false)
 		end
 
