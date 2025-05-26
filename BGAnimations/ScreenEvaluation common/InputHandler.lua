@@ -14,6 +14,9 @@ local panes, active_pane, active_graph = {}, {}, {}
 local style = ToEnumShortString(GAMESTATE:GetCurrentStyle():GetStyleType())
 local players = GAMESTATE:GetHumanPlayers()
 
+-- Disable quantization scatterplot if tech parser data is not available
+local numGraphs = SL[ToEnumShortString(players[1])].Streams.NoteAnnotations ~= nil and 4 or 3 
+
 local mpn = GAMESTATE:GetMasterPlayerNumber()
 
 -- since we're potentially retrieving from player profile
@@ -139,10 +142,10 @@ return function(event)
 
 		if event.GameButton == "MenuUp" or event.GameButton == "MenuDown" then
 			if event.GameButton == "MenuUp" then
-				active_graph[cn] = (active_graph[cn] - 1) % 3
-				if active_graph[cn] == 0 then active_graph[cn] = 3 end
+				active_graph[cn] = (active_graph[cn] - 1) % numGraphs
+				if active_graph[cn] == 0 then active_graph[cn] = numGraphs end
 			else
-				active_graph[cn] = (active_graph[cn] % 3) + 1
+				active_graph[cn] = (active_graph[cn] % numGraphs) + 1
 			end
 			
 			if #players==1 then
@@ -151,6 +154,7 @@ return function(event)
 				af:GetChild(ToEnumShortString(mpn) .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("ArrowPlot"):visible(active_graph[cn] == 2)
 				af:GetChild(ToEnumShortString(mpn) .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("FootPlot"):visible(active_graph[cn] == 3)
 				af:GetChild(ToEnumShortString(mpn) .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("Feet"):visible(active_graph[cn] == 3)
+				af:GetChild(ToEnumShortString(mpn) .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("QuantizationPlot"):visible(active_graph[cn] == 4)
 				panes[ocn][3]:playcommand("Graph", {graph=active_graph[cn]})
 			else
 				af:GetChild("P" .. cn .. "_AF_Lower"):GetChild("JudgeGraph"):visible(active_graph[cn] == 1)
@@ -158,6 +162,7 @@ return function(event)
 				af:GetChild("P" .. cn .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("ArrowPlot"):visible(active_graph[cn] == 2)
 				af:GetChild("P" .. cn .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("FootPlot"):visible(active_graph[cn] == 3)
 				af:GetChild("P" .. cn .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("Feet"):visible(active_graph[cn] == 3)
+				af:GetChild("P" .. cn .. "_AF_Lower"):GetChild("ArrowGraph"):GetChild("QuantizationPlot"):visible(active_graph[cn] == 4)
 			end
 			panes[cn][2]:playcommand("Graph", {graph=active_graph[cn]})
 			panes[cn][3]:playcommand("Graph", {graph=active_graph[cn]})

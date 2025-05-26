@@ -7,7 +7,7 @@ local args = ...
 local player = args.player
 local GraphWidth = args.GraphWidth
 local GraphHeight = args.GraphHeight
-local FootColors = { Color.Red, Color.Blue }
+local red, blue, purple, green, pink, yellow, light_pink, teal = color("#e80000"), color("#0066ff"), color("#9500ff"), color("#00ff00"), color("#ff6699"), color("#ffff00"), color("#ffcde0"), color("#00e8e5")
 
 local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
@@ -26,8 +26,9 @@ local TimingData = Steps:GetTimingData()
 local FirstSecond = math.min(TimingData:GetElapsedTimeFromBeat(0), 0)
 local LastSecond = GAMESTATE:GetCurrentSong():GetLastSecond()
 
---Parsed tech object used for determining foot placement
+-- Parsed tech object used for determining quantization (required)
 local parsedTech = SL[pn].Streams.NoteAnnotations
+if parsedTech == nil then return end
 
 -- variables that will be used and re-used in the loop while calculating the AMV's vertices
 local Offset, CurrentSecond, TimingWindow, x, y, c, r, g, b
@@ -58,21 +59,33 @@ for t in ivalues(sequential_offsets) do
 	
 	CurrentSecond = t[1]
 	Offset = t[2]
-	IsStream = t[4]
-	Foot = t[5]
 	
-	if parsedTech ~= nil then
-		local usesLeft = false
-		local usesRight = false
-		for col, foot in pairs(parsedTech[stepCount].footPlacement) do
-			if string.find(foot,"Left") then
-				usesLeft = true
-			else
-				usesRight = true
-			end
-		end
-		Foot = usesLeft
-		IsStream = not (usesLeft and usesRight) --Don't plot if both Left and Right foot
+	-- Include a small buffer for edge cases
+	local currentBeat = parsedTech[stepCount].beat + 0.001
+	if currentBeat % (1/1) < 0.01 then
+		-- 4th note
+		c = red
+	elseif currentBeat % (1/2) < 0.01 then
+		-- 8th note
+		c = blue
+	elseif currentBeat % (1/3) < 0.01 then
+		-- 12th note
+		c = purple
+	elseif currentBeat % (1/4) < 0.01 then
+		-- 16th note
+		c = green
+	elseif currentBeat % (1/6) < 0.01 then
+		-- 24th note
+		c = pink
+	elseif currentBeat % (1/8) < 0.01 then
+		-- 32nd note
+		c = yellow
+	elseif currentBeat % (1/12) < 0.01 then
+		-- 48th note
+		c = light_pink
+	else
+		-- 64th or 192nd note
+		c = teal
 	end
 	
 	EarlyHit = t[6]
@@ -87,13 +100,6 @@ for t in ivalues(sequential_offsets) do
 
 	-- pad the right end because the time measured seems to lag a little...
 	x = scale(CurrentSecond, FirstSecond, LastSecond + 0.05, 0, GraphWidth)
-	
-	-- get the appropriate color from the global SL table
-	if IsStream then
-		c = Foot and FootColors[1] or FootColors[2]
-	else
-		c = Color.Black
-	end
 
 	-- get the red, green, and blue values from that color
 	r = c[1]
@@ -168,7 +174,7 @@ end
 -- the scatter plot will use an ActorMultiVertex in "Quads" mode
 -- this is more efficient than drawing n Def.Quads (one for each judgment)
 -- because the entire AMV will be a single Actor rather than n Actors with n unique Draw() calls.
-local af = Def.ActorFrame{Name="FootPlot"}
+local af = Def.ActorFrame{Name="QuantizationPlot"}
 
 for verts in ivalues(vertsTable) do
 	local amv = Def.ActorMultiVertex{

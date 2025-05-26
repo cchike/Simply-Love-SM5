@@ -110,6 +110,7 @@ end
 
 af[#af+1] = LoadActor("./ScatterPlotDirection.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
 af[#af+1] = LoadActor("./ScatterPlotFoot.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
+af[#af+1] = LoadActor("./ScatterPlotQuantization.lua", {player=player, GraphWidth=GraphWidth, GraphHeight=GraphHeight} )
 af[#af+1] = Def.Sprite{
 				Texture=THEME:GetPathG("", "feet-diagram.png"),
 				Name="Feet",
