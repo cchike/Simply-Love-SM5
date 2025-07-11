@@ -35,6 +35,12 @@ end
 
 local isCrossover = function(beat)
 	if beat == nil then return false end
+	
+	-- Ignore crossover brackets (these are commonly either incorrectly identified or not intended by the step artist so we're ignoring them for now)
+	local footCount = 0
+	for _ in pairs(beat.footPlacement) do footCount = footCount + 1 end
+	if footCount > 1 then return false end
+	
 	for tech in ivalues(beat.tech) do
 		if ToEnumShortString(tech) == "Crossovers" then
 			return true
