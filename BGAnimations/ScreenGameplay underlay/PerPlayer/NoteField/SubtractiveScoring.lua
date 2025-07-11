@@ -142,6 +142,27 @@ bmt.ExCountsChangedMessageCommand=function(self, params)
 		local current_points = params.actual_points
 
 		local dp_lost = current_possible - current_points
+		local dp_lost10
+		
+		local eightMsOverride = mods.EightMs ~= "Off"
+		
+		-- If 8ms override is being used, calculate dp_lost based on SuperExScore (i.e. 10ms)
+		if eightMsOverride then
+			local counts = params.ExCounts
+			local exWeights = SL["SuperExWeights"]
+			W0 = exWeights["W010"]
+			W1 = exWeights["W110"]
+			W2 = exWeights["W2"]
+			W3 = exWeights["W3"]
+			W4 = exWeights["W4"]
+			W5 = exWeights["W5"]
+			miss = exWeights["Miss"]
+			letGo = exWeights["LetGo"]
+			held = exWeights["Held"]
+			hitMine = exWeights["HitMine"]
+			
+			dp_lost10 = counts["W110"]*(W0-W1) + counts["W2"]*(W0-W2) + counts["W3"]*(W0-W3) + counts["W4"]*(W0-W4) + counts["W5"]*(W0-W5) + counts["Miss"]*(W0-miss) + counts["LetGo"]*(held-letGo) + counts["HitMine"]*(-hitMine)
+		end
 		
 		local score = 100-math.floor((total_possible-dp_lost)/total_possible*10000)/100
 		
@@ -168,7 +189,11 @@ bmt.ExCountsChangedMessageCommand=function(self, params)
 					self:diffuse(Color.Red)
 				end				
 			end
-			self:settext("-" .. tostring(dp_lost*2))
+			if eightMsOverride then
+				self:settext("-" .. tostring(dp_lost10*2))
+			else
+				self:settext("-" .. tostring(dp_lost*2))
+			end
 		elseif mods.MiniIndicator == "PredictiveScoring" then
 			if mods.MiniIndicatorColor == "Default" then
 				if 100-score >= 96 then
