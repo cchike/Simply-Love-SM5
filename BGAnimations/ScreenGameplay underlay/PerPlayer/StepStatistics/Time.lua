@@ -11,6 +11,8 @@ local style = GAMESTATE:GetCurrentStyle():GetName()
 -- -----------------------------------------------------------------------
 -- reference to the BitmapText actor that will display remaining time
 local remBMT
+local lastRemBMT
+
 -- how wide (in visual pixels) the total time is, used to offset the label
 local total_width
 
@@ -76,12 +78,18 @@ local Update = function(af, delta)
 	-- SongPosition:GetMusicSeconds() can be negative for a bit at
 	-- the beginnging depending on how the stepartist set the offset
 	-- don't show negative time; just use 0
-	if SongPosition:GetMusicSeconds() < 0 then
+	local currentTime = SongPosition:GetMusicSeconds()
+	if currentTime < 0 then
 		remBMT:settext(fmt(totalseconds - seconds_offset))
 		return
 	end
-
-	remBMT:settext( fmt(clamp(totalseconds - seconds_offset - (SongPosition:GetMusicSeconds()/rate), 0, totalseconds)) )
+	
+	local curRemBMT = fmt(clamp(totalseconds - seconds_offset - (currentTime/rate), 0, totalseconds))
+	if curRemBMT ~= lastRemBMT then
+		remBMT:settext( curRemBMT )
+		lastRemBMT = curRemBMT
+	end
+	
 end
 
 -- -----------------------------------------------------------------------

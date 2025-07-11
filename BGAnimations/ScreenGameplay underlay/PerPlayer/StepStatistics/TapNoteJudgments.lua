@@ -28,6 +28,7 @@ local TNS = {
 	Judgments = { W1=0, W2=0, W3=0, W4=0, W5=0, Miss=0 },
 	Names = {},
 	Colors = {},
+	IndexMap = {}
 }
 
 -- Prepend "W0" if it's enabled.
@@ -55,6 +56,7 @@ for i, judgment in ipairs(TNS.Types) do
 		TNS.Names[#TNS.Names+1] = THEME:GetString(tns_string, judgment)
 		TNS.Colors[#TNS.Colors+1] = SL.JudgmentColors[SL.Global.GameMode][i]
 	end
+	TNS.IndexMap[judgment] = i
 end
 
 local leadingZeroAttr
@@ -91,12 +93,40 @@ af.InitCommand=function(self)
 		self:x(-GetNotefieldWidth() + 75):y(0 + 40)
 	end
 end
+af.JudgmentMessageCommand=function(self, params)
+	if params.Player ~= player then return end
+	if params.HoldNoteScore then return end
+	if not params.TapNoteScore then return end
+	if IsAutoplay(player) then return end
+	local tapNoteScore = ToEnumShortString(params.TapNoteScore)
+
+	-- Check the top window case for ShowFaPlusWindow.
+	if ShowFaPlusWindow and tapNoteScore == "W1" then
+		if SL[pn].ActiveModifiers.SmallerWhite and not SL[pn].ActiveModifiers.DisplayLock15ms then
+			if IsW010Judgment(params, player, eightMsOverride) then
+				tapNoteScore = "W0"
+			end
+		elseif IsW0Judgment(params, player) then
+			tapNoteScore = "W0"
+		end
+	end
+	
+	TNS.Judgments[tapNoteScore] = TNS.Judgments[tapNoteScore] + 1
+
+	local child = self:GetChild(tapNoteScore)
+	child:settext( (pattern):format(TNS.Judgments[tapNoteScore]) )
+	leadingZeroAttr = {
+		Length=(digits - (math.floor(math.log10(TNS.Judgments[tapNoteScore]))+1)),
+		Diffuse=Brightness(TNS.Colors[TNS.IndexMap[tapNoteScore]], 0.35)
+	}
+	child:AddAttribute(0, leadingZeroAttr )
+end
 
 for index, window in ipairs(TNS.Types) do
-
 	-- TNS value
 	-- i.e. how many W1s the player has earned so far, how many W2s, etc.
 	af[#af+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " ScreenEval")..{
+		Name=window,
 		Text=(pattern):format(0),
 		InitCommand=function(self)
 			self:zoom(0.5)
@@ -118,54 +148,6 @@ for index, window in ipairs(TNS.Types) do
 				self:AddAttribute(0, leadingZeroAttr )
 			else
 				self:diffuse(Brightness({1,1,1,1},0.25))
-			end
-		end,
-		JudgmentMessageCommand=function(self, params)
-			if params.Player ~= player then return end
-			if params.HoldNoteScore then return end
-			if not params.TapNoteScore then return end
-			if IsAutoplay(player) then return end
-
-			local incremented = false
-
-			-- Check the top window case for ShowFaPlusWindow.
-			if ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" then
-				local is_W0 = IsW0Judgment(params, player)
-				local is_W0_10 = IsW010Judgment(params, player, eightMsOverride)
-				if SL[pn].ActiveModifiers.SmallerWhite and not SL[pn].ActiveModifiers.DisplayLock15ms then
-					if is_W0_10 and window == "W0" then
-						TNS.Judgments[window] = TNS.Judgments[window] + 1
-						incremented = true
-					end
-
-					if not is_W0_10 and window == "W1" then
-						TNS.Judgments[window] = TNS.Judgments[window] + 1
-						incremented = true
-					end
-				else
-					if is_W0 and window == "W0" then
-						TNS.Judgments[window] = TNS.Judgments[window] + 1
-						incremented = true
-					end
-
-					if not is_W0 and window == "W1" then
-						TNS.Judgments[window] = TNS.Judgments[window] + 1
-						incremented = true
-					end
-				end
-			elseif ToEnumShortString(params.TapNoteScore) == window then
-				TNS.Judgments[window] = TNS.Judgments[window] + 1
-				incremented = true
-			end
-
-			if incremented then
-				self:settext( (pattern):format(TNS.Judgments[window]) )
-
-				leadingZeroAttr = {
-					Length=(digits - (math.floor(math.log10(TNS.Judgments[window]))+1)),
-					Diffuse=Brightness(TNS.Colors[index], 0.35)
-				}
-				self:AddAttribute(0, leadingZeroAttr )
 			end
 		end
 	}

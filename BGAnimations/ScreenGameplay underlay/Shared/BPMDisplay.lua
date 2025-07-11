@@ -5,6 +5,7 @@ local MasterPlayerState = GAMESTATE:GetPlayerState(GAMESTATE:GetMasterPlayerNumb
 local so = GAMESTATE:GetSongOptionsObject("ModsLevel_Song")
 
 local bpmDisplay, SongPosition
+local lastBpm
 
 -- -----------------------------------------------------------------------
 
@@ -15,15 +16,12 @@ local UpdateSingleBPM = function(af)
 	-- BPM stuff first
 	SongPosition = MasterPlayerState:GetSongPosition()
 
-	-- then, MusicRate stuff
-	MusicRate = so:MusicRate()
-
 	-- BPM Display
-	bpmDisplay:settext( round(SongPosition:GetCurBPS() * 60 * MusicRate) )
-
-	-- MusicRate Display
-	MusicRate = string.format("%.2f", MusicRate )
-	MusicRateDisplay:settext( MusicRate ~= "1.00" and MusicRate..xRateText or "" )
+	local currentBpm = round(SongPosition:GetCurBPS() * 60 * MusicRate)
+	if currentBpm ~= lastBpm then
+		bpmDisplay:settext( currentBpm )
+		lastBpm = currentBpm
+	end
 end
 
 -- the update function when two BPM Displays are needed for divergent TimingData (split BPMs)

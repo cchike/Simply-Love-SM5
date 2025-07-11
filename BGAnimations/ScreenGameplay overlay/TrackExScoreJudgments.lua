@@ -71,6 +71,7 @@ return Def.Actor{
 		if IsAutoplay(player) then return end
 		
 		local count_updated = false
+		local failed = stats:GetFailed()
 		if params.HoldNoteScore then
 			local HNS = ToEnumShortString(params.HoldNoteScore)
 			-- Missed holds are scored the same way as let go holds, so count them as such
@@ -79,7 +80,7 @@ return Def.Actor{
 			end
 			-- Only track the HoldNoteScores we care about
 			if valid_hns[HNS] then
-				if not stats:GetFailed() then
+				if not failed then
 					storage.ex_counts[HNS] = storage.ex_counts[HNS] + 1
 					count_updated = true
 				end
@@ -90,11 +91,9 @@ return Def.Actor{
 
 			if TNS == "W1" then
 				-- Check if this W1 is actually in the W0 window
-				local is_W0 = IsW0Judgment(params, player)
-				local is_W0_8 = IsW010Judgment(params, player, true)
-				local is_W010 = IsW010Judgment(params, player)
-				if is_W0_8 then
-					if not stats:GetFailed() then
+				-- if is_W0_8
+				if IsW010Judgment(params, player, true) then
+					if not failed then
 						storage.ex_counts.W0 = storage.ex_counts.W0 + 1
 						storage.ex_counts.W0_8 = storage.ex_counts.W0_8 + 1
 						storage.ex_counts.W010 = storage.ex_counts.W010 + 1
@@ -103,16 +102,18 @@ return Def.Actor{
 					storage.ex_counts.W0_total = storage.ex_counts.W0_total + 1
 					storage.ex_counts.W0_8_total = storage.ex_counts.W0_8_total + 1
 					storage.ex_counts.W010_total = storage.ex_counts.W010_total + 1
-				elseif is_W010 then
-					if not stats:GetFailed() then
+				-- elseif is_W010
+				elseif IsW010Judgment(params, player) then
+					if not failed then
 						storage.ex_counts.W0 = storage.ex_counts.W0 + 1
 						storage.ex_counts.W010 = storage.ex_counts.W010 + 1
 						count_updated = true
 					end
 					storage.ex_counts.W0_total = storage.ex_counts.W0_total + 1
 					storage.ex_counts.W010_total = storage.ex_counts.W010_total + 1
-				elseif is_W0 then
-					if not stats:GetFailed() then
+				-- elseif is_W0
+				elseif IsW0Judgment(params, player) then
+					if not failed then
 						storage.ex_counts.W0 = storage.ex_counts.W0 + 1
 						storage.ex_counts.W110 = storage.ex_counts.W110 + 1
 						storage.ex_counts.W1_8 = storage.ex_counts.W1_8 + 1
@@ -120,7 +121,7 @@ return Def.Actor{
 					end
 					storage.ex_counts.W0_total = storage.ex_counts.W0_total + 1
 				else
-					if not stats:GetFailed() then
+					if not failed then
 						storage.ex_counts.W1 = storage.ex_counts.W1 + 1
 						storage.ex_counts.W110 = storage.ex_counts.W110 + 1
 						storage.ex_counts.W1_8 = storage.ex_counts.W1_8 + 1
@@ -130,7 +131,7 @@ return Def.Actor{
 			else
 				-- Only track the TapNoteScores we care about
 				if valid_tns[TNS] then
-					if not stats:GetFailed() then
+					if not failed then
 						storage.ex_counts[TNS] = storage.ex_counts[TNS] + 1
 						count_updated = true
 					end
