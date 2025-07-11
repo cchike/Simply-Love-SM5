@@ -11,7 +11,7 @@ local threshold = nil
 for i = 1, NumJudgmentsAvailable() do
     if mods.TimingWindows[i] then
         if i == 1 and mods.ShowFaPlusWindow then
-            threshold = GetTimingWindow(1, "FA+", mods.SmallerWhite, eightMsOverride)
+            threshold = GetTimingWindow(1, "FA+", true, eightMsOverride)
         else
             threshold = GetTimingWindow(i)
         end
@@ -35,7 +35,7 @@ local function DisplayText(self, params)
 			
 			local smallerWhiteWindow = GetTimingWindow(1, "FA+", true, eightMsOverride)
 			
-			if smallerWhiteWindow < noteOffset and noteOffset <= W1 and mods.SmallerWhite then
+			if smallerWhiteWindow < noteOffset and noteOffset <= W1 and true then
 				scale1 = (noteOffset - smallerWhiteWindow)/(W1 - smallerWhiteWindow)
 			elseif W1 < noteOffset and noteOffset <= W2 then
 				scale2 = (noteOffset - W1)/(W2 - W1)
