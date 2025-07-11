@@ -29,6 +29,8 @@ local RpgYellow = color("1,0.972,0.792,1")
 local ItlPink = color("1,0.2,0.406,1")
 local BoogieStatsPurple = color("#8000ff")
 
+local currentHash = "nothing"
+
 local style_color = {
 	[0] = GrooveStatsBlue,  -- Either GrooveStats or GrooveStats EX score
 	[1] = GrooveStatsBlue,  -- Either GrooveStats or GrooveStats EX score
@@ -82,6 +84,7 @@ local HasData = function(idx)
 end
 
 local SetScoreData = function(data_idx, score_idx, rank, name, score, isSelf, isRival, isFail, isEx)
+	if score_idx > 5 then return end
 	all_data[data_idx].has_data = true
 
 	local score_data = all_data[data_idx]["scores"][score_idx]
@@ -170,6 +173,7 @@ local LeaderboardRequestProcessor = function(res, master)
 	-- First check to see if the leaderboard even exists.
 	if data and data[playerStr] then
 		if SL[pn].Streams.Hash ~= data[playerStr]["chartHash"] then return end
+		currentHash = SL[pn].Streams.Hash
 		-- These will get overwritten if we have any entries in the leaderboard below.
 		SetScoreData(1, 1, "", "No Scores", "", false, false, false, false)
 		SetScoreData(2, 1, "", "No Scores", "", false, false, false, false)
@@ -188,18 +192,22 @@ local LeaderboardRequestProcessor = function(res, master)
 			-- If the player is using EX scoring, then we want to display the EX leaderboard first.		
 			if showEX then
 				if data[playerStr]["exLeaderboard"] then
+					local added = {}
 					numEntries = 0
 					for entry in ivalues(data[playerStr]["exLeaderboard"]) do
-						numEntries = numEntries + 1
-						SetScoreData(1, numEntries,
-										tostring(entry["rank"]),
-										entry["name"],
-										string.format("%.2f", entry["score"]/100),
-										entry["isSelf"],
-										entry["isRival"],
-										entry["isFail"],
-										true
-									)
+						if not added[entry["name"]] then
+							added[entry["name"]] = true
+							numEntries = numEntries + 1
+							SetScoreData(1, numEntries,
+											tostring(entry["rank"]),
+											entry["name"],
+											string.format("%.2f", entry["score"]/100),
+											entry["isSelf"],
+											entry["isRival"],
+											entry["isFail"],
+											true
+										)
+						end
 					end
 					numEntries = numEntries + 1
 					for i=math.max(2,numEntries),5,1 do
@@ -211,17 +219,21 @@ local LeaderboardRequestProcessor = function(res, master)
 			if showITG then
 				if data[playerStr]["gsLeaderboard"] then
 					numEntries = 0
+					local added = {}
 					for entry in ivalues(data[playerStr]["gsLeaderboard"]) do
-						numEntries = numEntries + 1
-						SetScoreData(2, numEntries,
-										tostring(entry["rank"]),
-										entry["name"],
-										string.format("%.2f", entry["score"]/100),
-										entry["isSelf"],
-										entry["isRival"],
-										entry["isFail"],
-										boogie_ex
-									)
+						if not added[entry["name"]] then
+							added[entry["name"]] = true
+							numEntries = numEntries + 1
+							SetScoreData(2, numEntries,
+											tostring(entry["rank"]),
+											entry["name"],
+											string.format("%.2f", entry["score"]/100),
+											entry["isSelf"],
+											entry["isRival"],
+											entry["isFail"],
+											boogie_ex
+										)
+						end
 					end
 					numEntries = numEntries + 1
 					for i=math.max(2,numEntries),5,1 do
@@ -234,17 +246,21 @@ local LeaderboardRequestProcessor = function(res, master)
 			if showITG then
 				if data[playerStr]["gsLeaderboard"] then
 					numEntries = 0
+					local added = {}
 					for entry in ivalues(data[playerStr]["gsLeaderboard"]) do
-						numEntries = numEntries + 1
-						SetScoreData(1, numEntries,
-										tostring(entry["rank"]),
-										entry["name"],
-										string.format("%.2f", entry["score"]/100),
-										entry["isSelf"],
-										entry["isRival"],
-										entry["isFail"],
-										boogie_ex
-									)
+						if not added[entry["name"]] then
+							added[entry["name"]] = true
+							numEntries = numEntries + 1
+							SetScoreData(1, numEntries,
+											tostring(entry["rank"]),
+											entry["name"],
+											string.format("%.2f", entry["score"]/100),
+											entry["isSelf"],
+											entry["isRival"],
+											entry["isFail"],
+											boogie_ex
+										)
+						end
 					end
 					numEntries = numEntries + 1
 					for i=math.max(2,numEntries),5,1 do
@@ -256,17 +272,21 @@ local LeaderboardRequestProcessor = function(res, master)
 			if showEX then
 				if data[playerStr]["exLeaderboard"] then
 					numEntries = 0
+					local added = {}
 					for entry in ivalues(data[playerStr]["exLeaderboard"]) do
-						numEntries = numEntries + 1
-						SetScoreData(2, numEntries,
-										tostring(entry["rank"]),
-										entry["name"],
-										string.format("%.2f", entry["score"]/100),
-										entry["isSelf"],
-										entry["isRival"],
-										entry["isFail"],
-										true
-									)
+						if not added[entry["name"]] then
+							added[entry["name"]] = true
+							numEntries = numEntries + 1
+							SetScoreData(2, numEntries,
+											tostring(entry["rank"]),
+											entry["name"],
+											string.format("%.2f", entry["score"]/100),
+											entry["isSelf"],
+											entry["isRival"],
+											entry["isFail"],
+											true
+										)
+						end
 					end
 					numEntries = numEntries + 1
 					for i=math.max(2,numEntries),5,1 do
@@ -281,20 +301,24 @@ local LeaderboardRequestProcessor = function(res, master)
 			if data[playerStr]["rpg"] then
 				cur_style = 3
 				local numEntries = 0
+				local added = {}
 				SetScoreData(3, 1, "", "No Scores", "", false, false, false)
 
 				if data[playerStr]["rpg"]["rpgLeaderboard"] then
 					for entry in ivalues(data[playerStr]["rpg"]["rpgLeaderboard"]) do
-						numEntries = numEntries + 1
-						SetScoreData(3, numEntries,
-										tostring(entry["rank"]),
-										entry["name"],
-										string.format("%.2f", entry["score"]/100),
-										entry["isSelf"],
-										entry["isRival"],
-										entry["isFail"],
-										false
-									)
+						if not added[entry["name"]] then
+							added[entry["name"]] = true
+							numEntries = numEntries + 1
+							SetScoreData(3, numEntries,
+											tostring(entry["rank"]),
+											entry["name"],
+											string.format("%.2f", entry["score"]/100),
+											entry["isSelf"],
+											entry["isRival"],
+											entry["isFail"],
+											false
+										)
+						end
 					end
 					numEntries = numEntries + 1
 					for i=numEntries,5,1 do
@@ -312,24 +336,28 @@ local LeaderboardRequestProcessor = function(res, master)
 			if data[playerStr]["itl"] then
 				cur_style = 4
 				local numEntries = 0
+				local added = {}
 				SetScoreData(4, 1, "", "No Scores", "", false, false, false)
 
 				if data[playerStr]["itl"]["itlLeaderboard"] then
 					for entry in ivalues(data[playerStr]["itl"]["itlLeaderboard"]) do
-						if entry["isSelf"] then
-							UpdateItlExScore(player, SL[pn].Streams.Hash, entry["score"])
-							SL["P"..n].itlScore = entry["score"]
+						if not added[entry["name"]] then
+							added[entry["name"]] = true
+							if entry["isSelf"] then
+								UpdateItlExScore(player, SL[pn].Streams.Hash, entry["score"])
+								SL["P"..n].itlScore = entry["score"]
+							end
+							numEntries = numEntries + 1
+							SetScoreData(4, numEntries,
+											tostring(entry["rank"]),
+											entry["name"],
+											string.format("%.2f", entry["score"]/100),
+											entry["isSelf"],
+											entry["isRival"],
+											entry["isFail"],
+											true
+										)
 						end
-						numEntries = numEntries + 1
-						SetScoreData(4, numEntries,
-										tostring(entry["rank"]),
-										entry["name"],
-										string.format("%.2f", entry["score"]/100),
-										entry["isSelf"],
-										entry["isRival"],
-										entry["isFail"],
-										true
-									)
 					end
 					numEntries = numEntries + 1
 					for i=numEntries,5,1 do
@@ -399,7 +427,6 @@ local af = Def.ActorFrame{
 	end,
 	CurrentSongChangedMessageCommand=function(self)
 		self:finishtweening():visible(false)
-		ResetAllData()
 		self.isFirst = true
 	end,
 	CheckScoreboxCommand=function(self)
@@ -440,7 +467,7 @@ local af = Def.ActorFrame{
 		self:GetChild("GrooveStatsLogo"):stopeffect()
 		self:GetChild("BoogieStatsLogo"):stopeffect()
 		self:GetChild("BoogieStatsEXLogo"):stopeffect()
-		self:GetChild("SRPG8Logo"):visible(true)
+		self:GetChild("SRPGLogo"):visible(true)
 		self:GetChild("ITLLogo"):visible(true)
 		self:GetChild("Outline"):visible(true)
 		self:GetChild("Background"):linear(transition_seconds/2):diffusealpha(1):visible(true)
@@ -516,6 +543,11 @@ local af = Def.ActorFrame{
 			-- Should be fine though.
 			if sendRequest then
 				if self.IsParsing[1] or self.IsParsing[2] then return end
+				if currentHash == SL[pn].Streams.Hash then 
+					self:GetParent():visible(true)
+					self:GetParent():queuecommand("CheckScorebox")
+					return
+				end
 				
 				RemoveStaleCachedRequests()
 				ResetAllData()
@@ -539,7 +571,7 @@ local af = Def.ActorFrame{
 				self:GetParent():GetChild("GrooveStatsLogo"):visible(true):diffusealpha(0.5):glowshift({color("#C8FFFF"), color("#6BF0FF")})
 				self:GetParent():GetChild("BoogieStatsLogo"):visible(false)
 				self:GetParent():GetChild("BoogieStatsEXLogo"):visible(false)
-				self:GetParent():GetChild("SRPG8Logo"):diffusealpha(0):visible(false)
+				self:GetParent():GetChild("SRPGLogo"):diffusealpha(0):visible(false)
 				self:GetParent():GetChild("ITLLogo"):diffusealpha(0):visible(false)
 				self:GetParent():GetChild("Outline"):diffusealpha(0):visible(false)
 				self:GetParent():GetChild("Background"):diffusealpha(0):visible(false)
@@ -548,6 +580,7 @@ local af = Def.ActorFrame{
 					UpdatePathMap(player, SL[pn].Streams.Hash)
 				end
 				
+				ResetAllData()
 				self:playcommand("MakeGrooveStatsRequest", {
 					endpoint="player-leaderboards.php?"..NETWORK:EncodeQueryParameters(query),
 					method="GET",
@@ -675,10 +708,10 @@ local af = Def.ActorFrame{
 	},
 	-- SRPG Logo
 	Def.Sprite{
-		Texture=THEME:GetPathG("", "_VisualStyles/SRPG8/logo_main (doubleres).png"),
-		Name="SRPG8Logo",
+		Texture=THEME:GetPathG("", "_VisualStyles/SRPG9/logo_alt (doubleres).png"),
+		Name="SRPGLogo",
 		InitCommand=function(self)
-			self:diffusealpha(0.4):zoom(0.05):diffusealpha(0)
+			self:diffusealpha(0.4):zoom(0.07):diffusealpha(0)
 		end,
 		LoopScoreboxCommand=function(self)
 			if cur_style == 2 then

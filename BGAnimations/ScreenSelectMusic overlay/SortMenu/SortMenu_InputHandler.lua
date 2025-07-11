@@ -37,7 +37,7 @@ local input = function(event)
 					overlay:queuecommand("DirectInputToEngine")
 					SCREENMAN:GetTopScreen():GetMusicWheel():ChangeSort("SortOrder_Preferred")
 				end
-			-- the player wants to change modes, for example from ITG to FA+
+			-- the player wants to change modes, for example from ITG to Casual
 			elseif focus.kind == "ChangeMode" then
 				SL.Global.GameMode = focus.change
 				for player in ivalues(GAMESTATE:GetHumanPlayers()) do
@@ -95,6 +95,7 @@ local input = function(event)
 				elseif focus.new_overlay == "LoadNewSongs" then
 					-- Make sure we cancel the request if it's active before trying to switch screens.
 					-- This prevents the "Stale ActorFrame" error.
+					SL.NewDownloadsCompleted = false
 					overlay:GetChild("PaneDisplayMaster"):GetChild("GetScoresRequester"):playcommand("Cancel")
 					overlay:playcommand("DirectInputToEngine")
 					SCREENMAN:SetNewScreen("ScreenReloadSongsSSM")

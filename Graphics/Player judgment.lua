@@ -7,8 +7,6 @@ if mods.JudgmentBack then
 	return Def.ActorFrame{Name="Player Judgment"}
 end
 
-local eightMsOverride = mods.EightMs == "On"
-
 ------------------------------------------------------------
 -- A profile might ask for a judgment graphic that doesn't exist
 -- If so, use the first available Judgment graphic
@@ -24,22 +22,19 @@ if file_to_load == "None" then
 			if param.Player ~= player then return end
 
 			if ToEnumShortString(param.TapNoteScore) == "W1" and mods.ShowFaPlusWindow then
-				local is_W0 = IsW010Judgment(param, player) or ((not mods.SmallerWhite or mods.DisplayLock15ms) and IsW0Judgment(param, player))
+				local is_W0 = IsW010Judgment(param, player) or (not mods.SmallerWhite and IsW0Judgment(param, player))
 				if not is_W0 and not IsAutoplay(player) then
 					frame = 1
-
-					if mods.WhiteFlash ~= "Off" and (mods.WhiteFlash == "10ms" or not IsW0Judgment(param, player)) then
-						if param.Notes ~= nil then
-							for col,tapnote in pairs(param.Notes) do
-								local tnt = ToEnumShortString(tapnote:GetTapNoteType())
-								if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
-									GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
-								end
-							end
-						elseif param.TapNote ~= nil then
+					if param.Notes ~= nil then
+						for col,tapnote in pairs(param.Notes) do
+							local tnt = ToEnumShortString(tapnote:GetTapNoteType())
 							if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
 								GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
 							end
+						end
+					elseif param.TapNote ~= nil then
+						if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
+							GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
 						end
 					end
 				end
@@ -47,17 +42,8 @@ if file_to_load == "None" then
 	  end,
 		EarlyHitMessageCommand=function(self, param)
 			if param.Player ~= player then return end
-			
-			local tns = ToEnumShortString(param.TapNoteScore)
-			if tns == nil then return end
-			local isDecent = false
-			if SL.Global.GameMode == "FA+" then
-				isDecent = tns == "W5"
-			else
-				isDecent = tns == "W4"
-			end
 	
-			if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
+			if not mods.HideEarlyDecentWayOffFlash then
 				GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(param.Column + 1, param.TapNoteScore, --[[bright]] false)
 			end
 		end
@@ -85,17 +71,14 @@ for i = 1, 3 do
 end
 
 local maxTimingOffset = GetTimingWindow(enabledTimingWindows[#enabledTimingWindows])
-
-local maxError = 5
+local capTimingOffset = NumJudgmentsAvailable()
 if mods.ErrorBarTrim == "Fantastic" then
-	maxError = 1
+	capTimingOffset = 1
 elseif mods.ErrorBarTrim == "Excellent" then
-	maxError = 2
+	capTimingOffset = 2
 elseif mods.ErrorBarTrim == "Great" then
-	maxError = 3
+	capTimingOffset = 3
 end
-
-local capTimingOffset = GetTimingWindow(maxError < NumJudgmentsAvailable() and maxError or NumJudgmentsAvailable())
 
 local font = mods.ComboFont
 if font == "Wendy" or font == "Wendy (Cursed)" then
@@ -113,20 +96,11 @@ return Def.ActorFrame{
 	end,
 	EarlyHitMessageCommand=function(self, param)
 		if param.Player ~= player then return end
-		
-		local tns = ToEnumShortString(param.TapNoteScore)
-		if tns == nil then return end
-		local isDecent = false
-		if SL.Global.GameMode == "FA+" then
-			isDecent = tns == "W5"
-		else
-			isDecent = tns == "W4"
-		end
 
 		local frame = TNSFrames[ param.TapNoteScore ]
 		if not frame then return end
 
-		if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
+		if not mods.HideEarlyDecentWayOffFlash then
 			GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(param.Column + 1, param.TapNoteScore, --[[bright]] false)
 		end
 
@@ -146,12 +120,10 @@ return Def.ActorFrame{
 					end
 					-- We don't need to adjust the top window otherwise.
 				else
-					-- Everything outside of W1 needs to be shifted down a row if not in FA+ mode.
-					-- Some people might be using 2x7s in FA+ mode (by copying ITG graphics to FA+).
-					-- Don't need to shift in that case.
-					if SL.Global.GameMode ~= "FA+" then
-						frame = frame + 1
-					end
+                    -- Everything outside of W1 needs to be shifted down a row if not in FA+ mode.
+                    -- Some people might be using 2x7s in FA+ mode (by copying ITG graphics to FA+).
+                    -- Don't need to shift in that case.
+					frame = frame + 1
 				end
 			end
 
@@ -209,15 +181,9 @@ return Def.ActorFrame{
 			local earlyTns = ToEnumShortString(param.EarlyTapNoteScore)
 
 			if earlyTns ~= "None" then
-				if SL.Global.GameMode == "FA+" then
-					if tns == "W5" then
-						return
-					end
-				else
-					if tns == "W4" or tns == "W5" then
-						return
-					end
-				end
+				if tns == "W4" or tns == "W5" then
+                    return
+                end
 			end
 		end
 
@@ -231,7 +197,7 @@ return Def.ActorFrame{
 		if sprite:GetNumStates() == 7 or sprite:GetNumStates() == 14 then
 			if tns == "W1" then
 				if mods.ShowFaPlusWindow then
-					local is_W0 = IsW010Judgment(param, player) or ((not mods.SmallerWhite or mods.SplitWhites or mods.DisplayLock15ms) and IsW0Judgment(param, player))
+					local is_W0 = IsW010Judgment(param, player) or ((not mods.SmallerWhite or mods.SplitWhites) and IsW0Judgment(param, player))
 					-- If this W1 judgment fell outside of the FA+ window, show the white window
 					--
 					-- Treat Autoplay specially. The TNS might be out of the range, but
@@ -241,13 +207,11 @@ return Def.ActorFrame{
 						frame = 1
 						
 						for col,tapnote in pairs(param.Notes) do
-                            local tnt = ToEnumShortString(tapnote:GetTapNoteType())
-                            if mods.WhiteFlash ~= "Off" and (mods.WhiteFlash == "10ms" or not IsW0Judgment(param, player)) then
-                                if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
-                                    GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
-                                end
-                            end
-                        end
+							local tnt = ToEnumShortString(tapnote:GetTapNoteType())
+							if tnt == "Tap" or tnt == "HoldHead" or tnt == "Lift" then
+								GetPlayerAF(pn):GetChild("NoteField"):did_tap_note(col, "TapNoteScore_W1", --[[bright]] true)
+							end
+						end
 					end
 				end
 				-- We don't need to adjust the top window otherwise.
@@ -255,9 +219,7 @@ return Def.ActorFrame{
 				-- Everything outside of W1 needs to be shifted down a row if not in FA+ mode.
 				-- Some people might be using 2x7s in FA+ mode (by copying ITG graphics to FA+).
 				-- In that case, we need to shift the Way Off down to a Miss
-				if SL.Global.GameMode ~= "FA+" or tns == "Miss" then
-					frame = frame + 1
-				end
+				frame = frame + 1
 			end
 		end
 
@@ -333,7 +295,7 @@ return Def.ActorFrame{
 			sprite:zoom(1):decelerate(0.2):zoom(0.75):sleep(0.6):accelerate(0.2):zoom(0)
 		end
 		
-		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player, eightMsOverride) and not IsAutoplay(player) and not mods.DisplayLock15ms then
+		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player) and not IsAutoplay(player) then
 			local splitFrame = 1
 			if spriteGhost:GetNumStates() == 12 or spriteGhost:GetNumStates() == 14 then
 				splitFrame = splitFrame * 2

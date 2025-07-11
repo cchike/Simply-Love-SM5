@@ -119,6 +119,8 @@ af.JudgmentMessageCommand=function(self, params)
 		Length=(digits - (math.floor(math.log10(TNS.Judgments[tapNoteScore]))+1)),
 		Diffuse=Brightness(TNS.Colors[TNS.IndexMap[tapNoteScore]], 0.35)
 	}
+	-- TODO: Only update attributes as needed instead of clearing and adding.
+	self:ClearAttributes()
 	child:AddAttribute(0, leadingZeroAttr )
 end
 

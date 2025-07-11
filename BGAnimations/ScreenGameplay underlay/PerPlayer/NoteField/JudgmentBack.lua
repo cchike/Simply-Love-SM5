@@ -5,8 +5,6 @@ local sprite, spriteGhost
 
 if not mods.JudgmentBack then return end
 
-local eightMsOverride = mods.EightMs == "On"
-
 -- helper function for returning the player AF
 -- works as expected in ScreenGameplay
 --     arguments:  pn is short string PlayerNumber like "P1" or "P2"
@@ -63,17 +61,8 @@ if file_to_load == "None" then
 		InitCommand=function(self) self:visible(false) end,
 		EarlyHitMessageCommand=function(self, param)
 			if param.Player ~= player then return end
-			
-			local tns = ToEnumShortString(param.TapNoteScore)
-			if tns == nil then return end
-			local isDecent = false
-			if SL.Global.GameMode == "FA+" then
-				isDecent = tns == "W5"
-			else
-				isDecent = tns == "W4"
-			end
 	
-			if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
+			if not mods.HideEarlyDecentWayOffFlash then
 				SCREENMAN:GetTopScreen()
 								 :GetChild("Player"..pn)
 								 :GetChild("NoteField")
@@ -102,17 +91,14 @@ for i = 1, 3 do
 end
 
 local maxTimingOffset = GetTimingWindow(enabledTimingWindows[#enabledTimingWindows])
-
-local maxError = 5
+local capTimingOffset = NumJudgmentsAvailable()
 if mods.ErrorBarTrim == "Fantastic" then
-	maxError = 1
+	capTimingOffset = 1
 elseif mods.ErrorBarTrim == "Excellent" then
-	maxError = 2
+	capTimingOffset = 2
 elseif mods.ErrorBarTrim == "Great" then
-	maxError = 3
+	capTimingOffset = 3
 end
-
-local capTimingOffset = GetTimingWindow(maxError < NumJudgmentsAvailable() and maxError or NumJudgmentsAvailable())
 
 local font = mods.ComboFont
 if font == "Wendy" or font == "Wendy (Cursed)" then
@@ -138,20 +124,11 @@ return Def.ActorFrame{
 	end,
 	EarlyHitMessageCommand=function(self, param)
 		if param.Player ~= player then return end
-		
-		local tns = ToEnumShortString(param.TapNoteScore)
-		if tns == nil then return end
-		local isDecent = false
-		if SL.Global.GameMode == "FA+" then
-			isDecent = tns == "W5"
-		else
-			isDecent = tns == "W4"
-		end
 
 		local frame = TNSFrames[ param.TapNoteScore ]
 		if not frame then return end
 
-		if not mods.HideEarlyDecentWayOffFlash and not (mods.HideEarlyDecentFlash and isDecent) then
+		if not mods.HideEarlyDecentWayOffFlash then
 			SCREENMAN:GetTopScreen()
 							 :GetChild("Player"..pn)
 							 :GetChild("NoteField")
@@ -163,7 +140,7 @@ return Def.ActorFrame{
 			if sprite:GetNumStates() == 7 or sprite:GetNumStates() == 14 then
 				if ToEnumShortString(param.TapNoteScore) == "W1" then
 					if mods.ShowFaPlusWindow then
-						local is_W0 = IsW010Judgment(param, player, eightMsOverride) or ((not mods.SmallerWhite or mods.DisplayLock15ms) and IsW0Judgment(param, player))
+						local is_W0 = IsW010Judgment(param, player) or (not mods.SmallerWhite and IsW0Judgment(param, player))
 						-- If this W1 judgment fell outside of the FA+ window, show the white window
 						--
 						-- Treat Autoplay specially. The TNS might be out of the range, but
@@ -247,7 +224,7 @@ return Def.ActorFrame{
 		if sprite:GetNumStates() == 7 or sprite:GetNumStates() == 14 then
 			if tns == "W1" then
 				if mods.ShowFaPlusWindow then
-					local is_W0 = IsW010Judgment(param, player, eightMsOverride) or ((not mods.SmallerWhite or mods.SplitWhites or mods.DisplayLock15ms) and IsW0Judgment(param, player))
+					local is_W0 = IsW010Judgment(param, player) or ((not mods.SmallerWhite or mods.SplitWhites) and IsW0Judgment(param, player))
 					-- If this W1 judgment fell outside of the FA+ window, show the white window
 					--
 					-- Treat Autoplay specially. The TNS might be out of the range, but
@@ -346,7 +323,7 @@ return Def.ActorFrame{
 			sprite:zoom(1):decelerate(0.2):zoom(0.75):sleep(0.6):accelerate(0.2):zoom(0)
 		end
 		
-		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player, eightMsOverride) and not IsAutoplay(player) and not mods.DisplayLock15ms then
+		if mods.SplitWhites and mods.ShowFaPlusWindow and tns == "W1" and not IsW010Judgment(param, player) and not IsAutoplay(player) then
 			local splitFrame = 1
 			if spriteGhost:GetNumStates() == 12 or spriteGhost:GetNumStates() == 14 then
 				splitFrame = splitFrame * 2
