@@ -125,110 +125,112 @@ local function DisplayTick(self, params)
 		local offsetsLongTermMean = offsetsLongTermTotal/offsetsLongTerm:length()
 		---------
 		
-		offsets[#offsets+1] = {currentTimeMilliseconds, params.TapNoteOffset}
-		numOffsets = 0
-		totalOffset = 0;
-		local lastOffsetIndex = #offsets
-		if numMillisecondsToAvg == 0 then
-			-- Average the last numArrowsToAvg steps
-			for i = 1, numArrowsToAvg do
-				if #offsets+1-i <= 0 then
-					break
+		if not mods.LongAvgTickOnly then
+			offsets[#offsets+1] = {currentTimeMilliseconds, params.TapNoteOffset}
+			numOffsets = 0
+			totalOffset = 0;
+			local lastOffsetIndex = #offsets
+			if numMillisecondsToAvg == 0 then
+				-- Average the last numArrowsToAvg steps
+				for i = 1, numArrowsToAvg do
+					if #offsets+1-i <= 0 then
+						break
+					end
+					lastOffsetIndex = #offsets+1-i
+					totalOffset = totalOffset + offsets[#offsets+1-i][2]
+					numOffsets = numOffsets + 1
 				end
-				lastOffsetIndex = #offsets+1-i
-				totalOffset = totalOffset + offsets[#offsets+1-i][2]
-				numOffsets = numOffsets + 1
+			else
+				--Average all steps in the last numMillisecondsToAvg ms
+				for i = 1, #offsets do
+					--If current offset is not within numMillisecondsToAvg ms of the last note hit, then break
+					if currentTimeMilliseconds - offsets[#offsets+1-i][1] > numMillisecondsToAvg then
+						break
+					end
+					lastOffsetIndex = #offsets+1-i
+					totalOffset = totalOffset + offsets[#offsets+1-i][2]
+					numOffsets = numOffsets + 1
+				end
 			end
-		else
-			--Average all steps in the last numMillisecondsToAvg ms
-			for i = 1, #offsets do
-				--If current offset is not within numMillisecondsToAvg ms of the last note hit, then break
-				if currentTimeMilliseconds - offsets[#offsets+1-i][1] > numMillisecondsToAvg then
-					break
-				end
-				lastOffsetIndex = #offsets+1-i
-				totalOffset = totalOffset + offsets[#offsets+1-i][2]
-				numOffsets = numOffsets + 1
+			--If numOffsets to average is odd, then discard the last one to make it even
+			if numOffsets > 1 and numOffsets % 2 == 1 then
+				totalOffset = totalOffset - offsets[lastOffsetIndex][2]
+				numOffsets = numOffsets - 1
+			end
+			local offset = totalOffset/numOffsets
+			
+			offset = offset*offsetScale
+			
+			if math.abs(offset) > maxTimingOffset then
+				-- Round score to the error cap
+				score = "W" .. enabledTimingWindows[#enabledTimingWindows]
+				if offset < 0 then offset = -maxTimingOffset
+				else offset = maxTimingOffset end
+			end
+			
+			--Apply an additional correction if not using an average because it's jarring otherwise
+			if numOffsets == 1 then
+				offset = offset*0.75
+			end
+			
+			-- SM("-----------Debug Offset-----------")
+			-- SM(string.format("%.2f", offset*1000) .. " " .. string.format("%.2f", offset*(15/(math.abs(offset*1000) + 5))*1000))
+			
+			--Custom correction (move the tick less and less outwards as the error gets worse)
+			--offset = offset*(15/(math.abs(offset*1000) + 5))
+			
+			tick:finishtweening()
+			if numTicks > 1 then
+				tick:diffusealpha(1)
+					:x(offset * wscale)
+					:sleep(0.03):linear(tickDuration - 0.03)
+					:diffusealpha(0)
+			else
+				tick:diffusealpha(1)
+					:x(offset * wscale)
+					:sleep(tickDuration):diffusealpha(0)
+			end
+			
+			if mods.CenterTick then
+				centerTick:finishtweening()
+				centerTick:diffusealpha(0.3)
+					  :sleep(tickDuration):diffusealpha(0)
 			end
 		end
-		--If numOffsets to average is odd, then discard the last one to make it even
-		if numOffsets > 1 and numOffsets % 2 == 1 then
-			totalOffset = totalOffset - offsets[lastOffsetIndex][2]
-			numOffsets = numOffsets - 1
-		end
-		local offset = totalOffset/numOffsets
 		
-		offset = offset*offsetScale
 		offsetsLongTermMean = offsetsLongTermMean*offsetScale
 		
-		if math.abs(offset) > maxTimingOffset then
-			-- Round score to the error cap
-			score = "W" .. enabledTimingWindows[#enabledTimingWindows]
-			if offset < 0 then offset = -maxTimingOffset
-			else offset = maxTimingOffset end
-		end
-		
-		if math.abs(offsetsLongTermMean) > maxTimingOffset then
-			if offsetsLongTermMean < 0 then offsetsLongTermMean = -maxTimingOffset
-			else offsetsLongTermMean = maxTimingOffset end
-		end
-		
-		--Apply an additional correction if not using an average because it's jarring otherwise
-		if numOffsets == 1 then
-			offset = offset*0.75
-		end
-		
-		-- SM("-----------Debug Offset-----------")
-		-- SM(string.format("%.2f", offset*1000) .. " " .. string.format("%.2f", offset*(15/(math.abs(offset*1000) + 5))*1000))
-		
-		--Custom correction (move the tick less and less outwards as the error gets worse)
-		--offset = offset*(15/(math.abs(offset*1000) + 5))
-		
-		
-		-- Check if we need to adjust the color for the white fantastic window.
-		local is_W0 = IsW010Judgment(params, player, eightMsOverride) or (not mods.SmallerWhite and IsW0Judgment(params, player))
-        if mods.ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" and
-            is_W0 then
-            score = "W0"
-        end
-		if offset >= 0 then
-			window = self:GetChild("Bar"):GetChild("Windowl" .. score)
-		else
-			window = self:GetChild("Bar"):GetChild("Windowe" .. score)
-		end
-
-        tick:finishtweening()
-		centerTick:finishtweening()
 		longAvgTick:finishtweening()
         bar:finishtweening()
         bar:zoom(1)
 		
-        if numTicks > 1 then
-            tick:diffusealpha(1)
-                :x(offset * wscale)
-                :sleep(0.03):linear(tickDuration - 0.03)
-                :diffusealpha(0)
-        else
-            tick:diffusealpha(1)
-                :x(offset * wscale)
-                :sleep(tickDuration):diffusealpha(0)
-        end
-		
-		if mods.CenterTick then
-			centerTick:diffusealpha(0.3)
-                  :sleep(tickDuration):diffusealpha(0)
-		end
-		
-		-- Don't show the long-term mean until there are at least 8 notes hit and the distance from 0ms is great enough (using 4ms for now)
-		if mods.LongAvgTick and offsetsLongTerm:length() >= 8 and math.abs(offsetsLongTermMean) >= 0.004 then
+		-- Don't show the long-term mean until there are at least 16 notes hit and the distance from 0ms is great enough (using 4ms for now)
+		if offsetsLongTerm:length() >= 16 and math.abs(offsetsLongTermMean) >= 0.004 then
 			-- Add a 2x multiplier to make it stand out more
+			offsetsLongTermMean = offsetsLongTermMean*2
+			if math.abs(offsetsLongTermMean) > maxTimingOffset then
+				if offsetsLongTermMean < 0 then offsetsLongTermMean = -maxTimingOffset
+				else offsetsLongTermMean = maxTimingOffset end
+			end
 			longAvgTick:diffusealpha(1)
-					:x(offsetsLongTermMean * wscale * 2)
+					:x(offsetsLongTermMean * wscale)
 					:sleep(tickDuration):diffusealpha(0)
 		else
 			longAvgTick:diffusealpha(0)
 		end
 		
+		-- Check if we need to adjust the color for the white fantastic window.
+		--local is_W0 = IsW010Judgment(params, player, eightMsOverride) or (not mods.SmallerWhite and IsW0Judgment(params, player))
+		--if mods.ShowFaPlusWindow and ToEnumShortString(params.TapNoteScore) == "W1" and
+		--	is_W0 then
+		--	score = "W0"
+		--end
+		--if offset >= 0 then
+		--	window = self:GetChild("Bar"):GetChild("Windowl" .. score)
+		--else
+		--	window = self:GetChild("Bar"):GetChild("Windowe" .. score)
+		--end
+			
 		-- Disable the error bar rectangle for now
 		window = nil
 		
