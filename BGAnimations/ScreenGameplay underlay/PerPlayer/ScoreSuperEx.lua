@@ -4,7 +4,7 @@ local pn = ToEnumShortString(player)
 local mods = SL[pn].ActiveModifiers
 local IsUltraWide = (GetScreenAspectRatio() > 21/9)
 local NumPlayers = #GAMESTATE:GetHumanPlayers()
-local IsEX = SL[pn].ActiveModifiers.ShowEXScore
+local IsEX = SL[pn].ActiveModifiers.ShowExScore
 local IsSuperEx = SL[pn].ActiveModifiers.ShowSuperExScore
 
 if not IsSuperEx then return end
@@ -30,7 +30,7 @@ local styletype = ToEnumShortString(GAMESTATE:GetCurrentStyle():GetStyleType())
 -- and this is the cause of many code-induced headaches
 local pos = {
 	[PLAYER_1] = { x=(_screen.cx - clamp(_screen.w, 640, 854)/4.3),  y=56 },
-	[PLAYER_2] = { x=(_screen.cx + clamp(_screen.w, 640, 854)/4.3), y=56 },
+	[PLAYER_2] = { x=(_screen.cx + clamp(_screen.w, 640, 854)/2.75), y=56 },
 }
 
 local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
@@ -64,11 +64,12 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 		else
 			self:valign(0):horizalign(right)
 		end
-		self:zoom(0.25)
+		self:zoom(0.13)
 		if IsEX then
 			-- If EX Score, let's diffuse it to be the same as the FA+ top window.
 			-- This will make it consistent with the EX Score Pane.
 			self:diffuse(color('#FF00CC'))
+			self:settext("100.00")
 		end
 	end,
 
@@ -93,11 +94,12 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 											
 		self:xy( pos[player].x, pos[player].y )
 
-		if mods.NPSGraphAtTop and styletype ~= "OnePlayerTwoSides" then
+		--if mods.NPSGraphAtTop and
+		if styletype ~= "OnePlayerTwoSides" then
 			-- if NPSGraphAtTop and Step Statistics and not double,
 			-- move the score down into the stepstats pane under
 			-- the judgment breakdown
-			if mods.DataVisualizations=="Step Statistics" and false then
+			if mods.DataVisualizations=="Step Statistics" then
 				local step_stats = self:GetParent():GetChild("StepStatsPane"..pn)
 
 				-- Step Statistics might be true in the SL table from a previous game session
@@ -106,30 +108,34 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 				if step_stats then
 					if player==PLAYER_1 then
 						if NoteFieldIsCentered then
-							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale( 94, 112.5) )
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale(-74, -123) )
+							self:y( SL_WideScale(146, 90) )
 						else
-							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-84, -60) )
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale(-166, -243) )
+							self:y( 73 )
 						end
 
 					-- PLAYER_2
 					else
 						if NoteFieldIsCentered then
-							self:x( pos[ OtherPlayer[player] ].x - 65.5 )
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale(-20, 12) )
+							self:y( SL_WideScale(146, 90) )
 						else
-							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-6, -2))
+							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-88, -135))
+							self:y( 73 )
 						end
 					end
 
-					self:y( 282 )
+					
 				end
 
-			-- if NPSGraphAtTop but not Step Statistics
-			else
+			-- if not Step Statistics but NPSGraphAtTop 
+			elseif mods.NPSGraphAtTop then
 				-- if not Center1Player, move the score right or left
 				-- within the normal gameplay header to where the
 				-- other player's score would be if this were versus
 				if not NoteFieldIsCentered then
-					self:x( pos[ OtherPlayer[player] ].x + 115 )
+					self:x( pos[ OtherPlayer[player] ].x )
 					self:y( pos[ OtherPlayer[player] ].y )
 				end
 				-- if NoteFieldIsCentered, no need to move the score
@@ -150,7 +156,24 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 		if params.Player ~= player then return end
 
 		if IsEX then
-			self:settext(("%.02f"):format(params.SuperExScore))
+			local total_possible = params.actual_possible
+			local counts = params.ExCounts
+			exWeights = SL["SuperExWeights"]
+			W0 = exWeights["W010"]
+			W1 = exWeights["W110"]
+			W2 = exWeights["W2"]
+			W3 = exWeights["W3"]
+			W4 = exWeights["W4"]
+			W5 = exWeights["W5"]
+			miss = exWeights["Miss"]
+			letGo = exWeights["LetGo"]
+			held = exWeights["Held"]
+			hitMine = exWeights["HitMine"]
+			
+
+			local dp_lost = counts["W110"]*(W0-W1) + counts["W2"]*(W0-W2) + counts["W3"]*(W0-W3) + counts["W4"]*(W0-W4) + counts["W5"]*(W0-W5) + counts["Miss"]*(W0-miss) + counts["LetGo"]*(held-letGo) + counts["HitMine"]*(-hitMine)
+			
+			self:settext(("%.02f"):format(100*(total_possible-dp_lost)/total_possible))
 		end
 	end,
 }

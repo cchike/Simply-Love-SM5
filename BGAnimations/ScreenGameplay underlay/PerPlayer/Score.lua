@@ -57,11 +57,12 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 	Name=pn.."Score",
 	InitCommand=function(self)
 		self:valign(1):horizalign(right)
-		self:zoom(0.5)
+		self:zoom(0.20)
 		if IsEX then
 			-- If EX Score, let's diffuse it to be the same as the FA+ top window.
 			-- This will make it consistent with the EX Score Pane.
 			self:diffuse(SL.JudgmentColors["FA+"][1])
+			self:settext("100.00")
 		end
 	end,
 
@@ -85,11 +86,12 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 		-- assume "normal" score positioning first, but there are many reasons it will need to be moved
 		self:xy( pos[player].x, pos[player].y )
 
-		if mods.NPSGraphAtTop and styletype ~= "OnePlayerTwoSides" then
+		--if mods.NPSGraphAtTop and
+		if styletype ~= "OnePlayerTwoSides" then
 			-- if NPSGraphAtTop and Step Statistics and not double,
 			-- move the score down into the stepstats pane under
 			-- the judgment breakdown
-			if mods.DataVisualizations=="Step Statistics" and false then
+			if mods.DataVisualizations=="Step Statistics" then
 				local step_stats = self:GetParent():GetChild("StepStatsPane"..pn)
 
 				-- Step Statistics might be true in the SL table from a previous game session
@@ -98,25 +100,29 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 				if step_stats then
 					if player==PLAYER_1 then
 						if NoteFieldIsCentered then
-							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale( 94, 112.5) )
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale(-75, -124) )
+							self:y( SL_WideScale(150, 92) )
 						else
-							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-84, -60) )
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale(-167, -244) )
+							self:y( 75 )
 						end
 
 					-- PLAYER_2
 					else
 						if NoteFieldIsCentered then
-							self:x( pos[ OtherPlayer[player] ].x - 65.5 )
+							self:x( pos[ OtherPlayer[player] ].x + SL_WideScale(32, 65) )
+							self:y( SL_WideScale(150, 92) )
 						else
-							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-6, -2))
+							self:x( pos[ OtherPlayer[player] ].x - SL_WideScale(-141, -189))
+							self:y( 75 )
 						end
 					end
 
-					self:y( 282 )
+					
 				end
 
-			-- if NPSGraphAtTop but not Step Statistics
-			else
+			-- if not Step Statistics but NPSGraphAtTop 
+			elseif mods.NPSGraphAtTop then
 				-- if not Center1Player, move the score right or left
 				-- within the normal gameplay header to where the
 				-- other player's score would be if this were versus
@@ -137,12 +143,28 @@ return LoadFont(ThemePrefs.Get("ThemeFont") .. " numbers")..{
 			local percent = FormatPercentScore( dance_points ):sub(1,-2)
 			self:settext(percent)
 		end
-	end,
+	end,					
 	ExCountsChangedMessageCommand=function(self, params)
 		if params.Player ~= player then return end
-
 		if IsEX then
-			self:settext(("%.02f"):format(params.ExScore))
+			local total_possible = params.actual_possible
+			local counts = params.ExCounts
+			exWeights = SL["ExWeights"]
+			W0 = exWeights["W0"]
+			W1 = exWeights["W1"]
+			W2 = exWeights["W2"]
+			W3 = exWeights["W3"]
+			W4 = exWeights["W4"]
+			W5 = exWeights["W5"]
+			miss = exWeights["Miss"]
+			letGo = exWeights["LetGo"]
+			held = exWeights["Held"]
+			hitMine = exWeights["HitMine"]
+			
+
+			local dp_lost = counts["W1"]*(W0-W1) + counts["W2"]*(W0-W2) + counts["W3"]*(W0-W3) + counts["W4"]*(W0-W4) + counts["W5"]*(W0-W5) + counts["Miss"]*(W0-miss) + counts["LetGo"]*(held-letGo) + counts["HitMine"]*(-hitMine)
+			
+			self:settext(("%.02f"):format(100*(total_possible-dp_lost)/total_possible))
 		end
 	end,
 }

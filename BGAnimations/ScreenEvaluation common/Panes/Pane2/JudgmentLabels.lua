@@ -160,16 +160,16 @@ for index, label in ipairs(RadarCategories) do
 					if SL[pn].ActiveModifiers.SmallerWhite then
 						local label = "10FA+"
 						self:x( (controller == PLAYER_1 and -135) or 108 )
-						if SL[pn].ActiveModifiers.ShowSuperExScore then
-							label = "S.EX"
-							self:diffuse(color('#FF00CC'))
-							self:x( (controller == PLAYER_1 and -141) or 102 )
-						end
 						self:settext(label)
 					else
 						self:x( (controller == PLAYER_1 and -150) or 93 )
 						self:settext("FA+")
 						self:diffuse(Color.White)
+					end
+					if SL[pn].ActiveModifiers.ShowSuperExScore then
+						self:x( (controller == PLAYER_1 and -141) or 102 )
+						self:settext("S.EX")
+						self:diffuse(color('#FF00CC'))
 					end
 				elseif showFaPlusPercent == 1 then
 					self:x( (controller == PLAYER_1 and -160) or 90 )
