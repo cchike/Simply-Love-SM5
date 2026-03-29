@@ -5,19 +5,30 @@
 -- SM5.1's default theme uses ./Graphics/NoteColumn layers.lua to dynamically load HoldJudgments,
 -- which seems to make use of SM5's NoteColumn system.  I can dig into that when this fails.
 
+local function ResolvePlayerFromActor(self)
+    local p1_af = GetPlayerAF("P1")
+    local p2_af = GetPlayerAF("P2")
+
+    local actor = self
+    while actor do
+        if p1_af and actor == p1_af then return "P1" end
+        if p2_af and actor == p2_af then return "P2" end
+        actor = actor:GetParent()
+    end
+
+    return nil
+end
+
 return Def.Sprite{
 	BeginCommand=function(self)
-		local label = "None"
+		local label = "None 1x2.png"
+        local pn = ResolvePlayerFromActor(self)
 
 		-- force EditMode to use Love HoldJudgment for now
 		if SCREENMAN:GetTopScreen():GetName():match("ScreenEdit") then
 			label = "Love 1x2 (doubleres).png"
 
-		elseif self:GetParent() and self:GetParent():GetParent() then
-			-- self:GetParent():GetParent() will return the main Player ActorFrame
-			-- with a name like "PlayerP1" or "PlayerP2"
-			-- we can use the "P1" or "P2" part of the string to index the SL table
-			local pn = self:GetParent():GetParent():GetName():gsub("Player", "")
+		elseif pn then
 			label = SL[pn].ActiveModifiers.HoldJudgment or "None 1x2.png"
 		end
 
