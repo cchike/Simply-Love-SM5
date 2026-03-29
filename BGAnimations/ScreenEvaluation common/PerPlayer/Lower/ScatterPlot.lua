@@ -1,4 +1,6 @@
--- if we're in CourseMode, then we'll have to collect steps per chart
+-- if we're in CourseMode, bail now
+-- the normal LifeMeter graph (Def.GraphDisplay) will be drawn
+-- if GAMESTATE:IsCourseMode() then return end
 local iscourse = GAMESTATE:IsCourseMode()
 
 -- arguments passed in from Graphs.lua
@@ -10,6 +12,19 @@ local GraphHeight = args.GraphHeight
 local mods = SL[pn].ActiveModifiers
 
 local eightMsOverride = mods.EightMs == "On"
+local eightMsFastSlow = mods.EightMs == "FastSlow"
+
+local function TotalCourseLength(player)
+    -- utility for graph stuff because i ended up doing this a lot
+    -- i use this method instead of TrailUtil.GetTotalSeconds because that leaves unused time at the end in graphs
+    local trail = GAMESTATE:GetCurrentTrail(player)
+    local t = 0
+    for te in ivalues(trail:GetTrailEntries()) do
+        t = t + te:GetSong():GetLastSecond()
+    end
+
+    return t
+end
 
 -- sequential_offsets gathered in ./BGAnimations/ScreenGameplay overlay/JudgmentOffsetTracking.lua
 local sequential_offsets = SL[pn].Stages.Stats[SL.Global.Stages.PlayedThisGame + 1].sequential_offsets
@@ -24,7 +39,7 @@ local Steps = GAMESTATE:GetCurrentSteps(player)
 local TimingData = Steps:GetTimingData()
 -- FirstSecond and LastSecond are used in scaling the x-coordinates of the AMV's vertices
 local FirstSecond = math.min(TimingData:GetElapsedTimeFromBeat(0), 0)
-local LastSecond = (not iscourse) and GAMESTATE:GetCurrentSong():GetLastSecond() or TotalCourseLength(player) * SL.Global.ActiveModifiers.MusicRate
+local LastSecond = (not iscourse) and GAMESTATE:GetCurrentSong():GetLastSecond() or TotalCourseLength(player)
 
 -- variables that will be used and re-used in the loop while calculating the AMV's vertices
 local Offset, CurrentSecond, TimingWindow, x, y, c, r, g, b
@@ -92,7 +107,7 @@ for t in ivalues(sequential_offsets) do
 
 		if mods.ShowFaPlusWindow and mods.ShowFaPlusPane then
 			abs_offset = math.abs(Offset)
-			if mods.SmallerWhite and abs_offset <= GetTimingWindow(1, "FA+", true, eightMsOverride) then
+			if (mods.SmallerWhite or eightMsFastSlow) and abs_offset <= GetTimingWindow(1, "FA+", true, eightMsOverride) then
 				c = color("#E928FF") -- Magenta
 			elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
 				c = SL.JudgmentColors["FA+"][2]
@@ -129,7 +144,7 @@ for t in ivalues(sequential_offsets) do
 
 			if mods.ShowFaPlusWindow and mods.ShowFaPlusPane then
 				abs_offset = math.abs(EarlyOffset)
-				if mods.SmallerWhite and abs_offset > GetTimingWindow(1, "FA+", true, eightMsOverride) and abs_offset <= GetTimingWindow(1, "FA+", false) then
+				if (mods.SmallerWhite or eightMsFastSlow) and abs_offset > GetTimingWindow(1, "FA+", true, eightMsOverride) and abs_offset <= GetTimingWindow(1, "FA+", false) then
 					c = BlendColors(SL.JudgmentColors["FA+"][2], colors[1])
 				elseif abs_offset > GetTimingWindow(1, "FA+") and abs_offset <= GetTimingWindow(2, "FA+") then
 					c = SL.JudgmentColors["FA+"][2]
@@ -211,7 +226,6 @@ end
 -- Since we've now split the table into multiples, create an ActorMultiVertex for each table and store them into one ActorFrame.
 local af = Def.ActorFrame{}
 
--- if this is the score screen for a course, then iterate through each chart and plot them
 if iscourse then
 	local trailEntries = GAMESTATE:GetCurrentTrail(player):GetTrailEntries()
 	local curSecs = 0

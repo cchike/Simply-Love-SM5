@@ -5,6 +5,7 @@ local pn = ToEnumShortString(player)
 local NumPlayers = #GAMESTATE:GetHumanPlayers()
 
 local eightMsOverride = SL[pn].ActiveModifiers.EightMs == "On"
+local eightMsFastSlow = SL[pn].ActiveModifiers.EightMs == "FastSlow"
 
 local GraphWidth  = THEME:GetMetric("GraphDisplay", "BodyWidth")
 local GraphHeight = THEME:GetMetric("GraphDisplay", "BodyHeight")
@@ -52,9 +53,9 @@ local af = Def.ActorFrame{
 	Def.Quad{
 		InitCommand=function(self)
 			self:zoomto(GraphWidth, GraphHeight):diffuse(color("#101519")):vertalign(top)
-			if ThemePrefs.Get("VisualStyle") == "Technique" then
-				self:diffusealpha(0.95)
-			end
+			-- if ThemePrefs.Get("VisualStyle") == "Technique" then
+				-- self:diffusealpha(0.95)
+			-- end
 		end
 	},
 }
@@ -78,7 +79,7 @@ else
 		OnCommand=function(self)
 			self:addx(-GraphWidth/2):addy(GraphHeight)
 			-- Lower the opacity otherwise some of the scatter plot points might become hard to see.
-			self:diffusealpha(0.65)
+			self:diffusealpha(0.5)
 		end,
 	}
 end
@@ -106,7 +107,7 @@ local colors = {}
 
 if game_mode == "FA+" then
 	worst_judge = worst_judge + 1
-	if mods.SmallerWhite then
+	if (mods.SmallerWhite or eightMsFastSlow) then
 		colors[1] = color("#E928FF") -- Magenta
 		for i=1,#SL.JudgmentColors["FA+"] do
 			colors[i+1] = SL.JudgmentColors["FA+"][i]
@@ -119,7 +120,7 @@ else
 end
 
 -- Logic for drawing the color coded backgrounds by judgment in the main timing Scatterplot
-local one_if_smaller_white = mods.SmallerWhite and 1 or 0
+local one_if_smaller_white = (mods.SmallerWhite or eightMsFastSlow) and 1 or 0
 for i=(1-one_if_smaller_white),worst_judge do
 	local endpoint = 0
 	if i > (1-one_if_smaller_white) then
@@ -181,8 +182,8 @@ af[#af+1] = Def.GraphDisplay{
 			self:addx(offset/2)
 			self:SetWidth(GraphWidth - offset)
 		else
-			local duration = TotalCourseLength(player)
-			local liveDuration = TotalCourseLengthPlayed(player)
+			local duration = TotalCourseLength()
+			local liveDuration = TotalCourseLengthPlayed()
 
 			if liveDuration ~= -1 then
 				self:SetWidth(liveDuration / duration * GraphWidth):x(-GraphWidth/2):horizalign(left)
@@ -221,8 +222,8 @@ if storage.DeathSecond ~= nil then
 	local secondsLeft = seconds - deathSecond
 	
 	if GAMESTATE:IsCourseMode() then
-		local duration = TotalCourseLength(player)
-		local liveDuration = TotalCourseLengthPlayed(player)
+		local duration = TotalCourseLength()
+		local liveDuration = TotalCourseLengthPlayed()
 		graphPercentage = graphPercentage * liveDuration / duration
 	end
 

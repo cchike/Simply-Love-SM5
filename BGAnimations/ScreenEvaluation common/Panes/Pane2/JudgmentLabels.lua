@@ -15,22 +15,22 @@ local TapNoteScores = {}
 local TapNoteScores = {
 	Types = { 'W0', 'W1', 'W2', 'W3', 'W4', 'W5', 'Miss' },
 	Names = {
-		THEME:GetString("TapNoteScore", "W1"),
-		THEME:GetString("TapNoteScoreFA+", "W2"), -- Extract the Fantastic White window
-        THEME:GetString("TapNoteScore", "W2"),
-		THEME:GetString("TapNoteScore", "W3"),
-		THEME:GetString("TapNoteScore", "W4"),
-		THEME:GetString("TapNoteScore", "W5"),
-		THEME:GetString("TapNoteScore", "Miss"),
+		THEME:GetString("TapNoteScoreFA+", "W1"),
+		THEME:GetString("TapNoteScoreFA+", "W2"),
+		THEME:GetString("TapNoteScoreFA+", "W3"),
+		THEME:GetString("TapNoteScoreFA+", "W4"),
+		THEME:GetString("TapNoteScoreFA+", "W5"),
+		THEME:GetString("TapNoteScore", "W5"), -- FA+ mode doesn't have a Way Off window. Extract name from the ITG mode.
+		THEME:GetString("TapNoteScoreFA+", "Miss"),
 	},
 	Colors = {
-		SL.JudgmentColors["ITG"][1], -- Fantastic Blue
-		SL.JudgmentColors["FA+"][2], -- Just extract the Fantastic white color
-        SL.JudgmentColors["ITG"][2], -- Yellow Excellent
-		SL.JudgmentColors["ITG"][3], -- Green Great
-		SL.JudgmentColors["ITG"][4], -- Purple Decent
-		SL.JudgmentColors["ITG"][5], -- Way Off
-		SL.JudgmentColors["ITG"][6], -- Red Miss
+		SL.JudgmentColors["FA+"][1],
+		SL.JudgmentColors["FA+"][2],
+		SL.JudgmentColors["FA+"][3],
+		SL.JudgmentColors["FA+"][4],
+		SL.JudgmentColors["FA+"][5],
+		SL.JudgmentColors["ITG"][5], -- FA+ mode doesn't have a Way Off window. Extract color from the ITG mode.
+		SL.JudgmentColors["FA+"][6],
 	},
 	-- x values for P1 and P2
 	x = { P1=64, P2=94 }
@@ -92,7 +92,7 @@ for i=1, #TapNoteScores.Types do
 				self:diffuse( TapNoteScores.Colors[i] )
 			end
 		}
-		if i==1 and SL[pn].ActiveModifiers.SmallerWhite then
+		if i==1 and (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) then
 			local show15 = 0
 			t[#t+1] = LoadFont(ThemePrefs.Get("ThemeFont") .. " Normal")..{
 				Text="10ms",
@@ -130,7 +130,7 @@ end
 -- labels: hands/ex, holds, mines, rolls
 for index, label in ipairs(RadarCategories) do
 	if index == 1 then
-		local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite and 0 or 1
+		local showFaPlusPercent = (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) and 0 or 1
 		local text = nil
 		if SL[pn].ActiveModifiers.ShowExScore then
 			text = "ITG"
@@ -145,7 +145,7 @@ for index, label in ipairs(RadarCategories) do
 			Text=text,
 			InitCommand=function(self) self:zoom(0.5):horizalign(right) end,
 			BeginCommand=function(self)
-				self:x( (controller == PLAYER_1 and -160) or 82 )
+				self:x( (controller == PLAYER_1 and -160) or 90 )
 				self:y(38)
 
 				if SL[pn].ActiveModifiers.ShowExScore then
@@ -157,7 +157,7 @@ for index, label in ipairs(RadarCategories) do
 			end,
 			MarqueeCommand=function(self)
 				if showFaPlusPercent == 0 then
-					if SL[pn].ActiveModifiers.SmallerWhite then
+					if (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) then
 						local label = "10FA+"
 						self:x( (controller == PLAYER_1 and -135) or 108 )
 						self:settext(label)
@@ -176,7 +176,7 @@ for index, label in ipairs(RadarCategories) do
 					self:settext(text)
 					self:diffuse(Color.White)
 				elseif showFaPlusPercent == 2 then
-					if SL[pn].ActiveModifiers.SmallerWhite then
+					if (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) then
 						self:x( (controller == PLAYER_1 and -135) or 108 )
 						self:settext("8FA+")
 					else

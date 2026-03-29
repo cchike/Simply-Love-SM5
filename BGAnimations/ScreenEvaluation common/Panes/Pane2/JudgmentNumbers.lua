@@ -14,7 +14,7 @@ local CalculateFaPlus = function(ex_counts, eightms)
 			total_taps = total_taps + value
 		end
 	end
-	if SL[pn].ActiveModifiers.SmallerWhite then
+	if (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) then
 		return math.max(0, math.floor(ex_counts[eightms and "W0_8" or "W010"]/total_taps * 10000) / 100)
 	end
 	return math.max(0, math.floor(ex_counts["W0"]/total_taps * 10000) / 100)
@@ -23,13 +23,13 @@ end
 local TapNoteScores = {
 	Types = { 'W0', 'W1', 'W2', 'W3', 'W4', 'W5', 'Miss' },
 	Colors = {
-		SL.JudgmentColors["ITG"][1], -- Fantastic Blue
-		SL.JudgmentColors["FA+"][2], -- Just extract the Fantastic white color
-        SL.JudgmentColors["ITG"][2], -- Yellow Excellent
-		SL.JudgmentColors["ITG"][3], -- Green Great
-		SL.JudgmentColors["ITG"][4], -- Purple Decent
-		SL.JudgmentColors["ITG"][5], -- Way Off
-		SL.JudgmentColors["ITG"][6], -- Red Miss
+		SL.JudgmentColors["FA+"][1],
+		SL.JudgmentColors["FA+"][2],
+		SL.JudgmentColors["FA+"][3],
+		SL.JudgmentColors["FA+"][4],
+		SL.JudgmentColors["FA+"][5],
+		SL.JudgmentColors["ITG"][5], -- FA+ mode doesn't have a Way Off window. Extract color from the ITG mode.
+		SL.JudgmentColors["FA+"][6],
 	},
 	-- x values for P1 and P2
 	x = { P1=64, P2=94 }
@@ -102,7 +102,7 @@ for i=1,#TapNoteScores.Types do
 			self:x( TapNoteScores.x[ToEnumShortString(controller)] )
 			self:y((i-1)*32 -24)
 			self:targetnumber(number)
-			if SL[pn].ActiveModifiers.SmallerWhite then
+			if (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) then
 				self:playcommand("Marquee")
 			end
 		end,
@@ -125,7 +125,7 @@ end
 for index, RCType in ipairs(RadarCategories.Types) do
 	-- Swap to displaying ITG score if we're showing EX score in gameplay.
 	local percent = nil
-	local showFaPlusPercent = SL[pn].ActiveModifiers.SmallerWhite and 0 or 1
+	local showFaPlusPercent = (SL[pn].ActiveModifiers.SmallerWhite or eightMsOverride) and 0 or 1
 	local faPlusPercent = CalculateFaPlus(counts)
 	local faPlusPercent8 = CalculateFaPlus(counts, true)
 	if SL[pn].ActiveModifiers.ShowExScore then

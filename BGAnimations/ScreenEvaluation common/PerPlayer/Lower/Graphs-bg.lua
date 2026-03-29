@@ -7,6 +7,8 @@ local NumPlayers = #GAMESTATE:GetHumanPlayers()
 local GraphWidth  = THEME:GetMetric("GraphDisplay", "BodyWidth")
 local GraphHeight = THEME:GetMetric("GraphDisplay", "BodyHeight")
 
+local eightMsFastSlow = SL[pn].ActiveModifiers.EightMs == "FastSlow"
+
 local af = Def.ActorFrame{
 	Name="ArrowGraph",
 	InitCommand=function(self)
@@ -65,7 +67,7 @@ local colors = {}
 
 if game_mode == "FA+" then
 	worst_judge = worst_judge + 1
-	if mods.SmallerWhite then
+	if (mods.SmallerWhite or eightMsFastSlow) then
 		colors[1] = color("#E928FF") -- Magenta
 		for i=1,#SL.JudgmentColors["FA+"] do
 			colors[i+1] = SL.JudgmentColors["FA+"][i]
@@ -78,7 +80,7 @@ else
 end
 
 -- Logic for drawing the color coded backgrounds by judgment in the main timing Scatterplot
-local one_if_smaller_white = mods.SmallerWhite and 1 or 0
+local one_if_smaller_white = (mods.SmallerWhite or eightMsFastSlow) and 1 or 0
 for i=(1-one_if_smaller_white),worst_judge do
 	local endpoint = 0
 	if i > (1-one_if_smaller_white) then
